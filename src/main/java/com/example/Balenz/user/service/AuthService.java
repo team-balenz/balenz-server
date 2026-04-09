@@ -4,6 +4,7 @@ import com.example.Balenz.global.exception.BaseException;
 import com.example.Balenz.global.exception.ErrorCode;
 import com.example.Balenz.global.security.CookieUtil;
 import com.example.Balenz.global.security.JwtProvider;
+import com.example.Balenz.user.dto.LoginDto;
 import com.example.Balenz.user.dto.SignUpDto;
 import com.example.Balenz.user.dto.TokenDto;
 import com.example.Balenz.user.entity.RefreshToken;
@@ -61,6 +62,34 @@ public class AuthService {
         refreshTokenRepository.save(RefreshToken.builder()
                 .refreshToken(tokens.getRefreshToken())
                 .user(user).build());
+
+        cookieUtil.addCookie(response, "accessToken", tokens.getAccessToken(),
+                (int) (JwtProvider.EXPIRE_ACCESS / 1000), COOKIE_SECURE, COOKIE_SAMESITE);
+        cookieUtil.addCookie(response, "refreshToken", tokens.getRefreshToken(),
+                (int) (JwtProvider.EXPIRE_REFRESH / 1000), COOKIE_SECURE, COOKIE_SAMESITE);
+    }
+
+    @Transactional
+    public void login(HttpServletResponse response, LoginDto loginDto) {
+        String email = loginDto.getEmail();
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
+                new BaseException(ErrorCode.LOGIN_FAILED, "잘못된 이메일 혹은 비밀번호입니다."));
+
+        String password = loginDto.getPassword();
+        if (password == null || password.isBlank() || !passwordEncoder.matches(password, user.getPassword())) {
+            throw new BaseException(ErrorCode.LOGIN_FAILED, "잘못된 이메일 혹은 비밀번호입니다.");
+        }
+
+        Long userId = user.getId();
+        TokenDto tokens = jwtProvider.createTokens(userId, user.getEmail(), user.getRole());
+
+        // refresh token rotate - 기존 값 있는 경우 갱신, 없으면 새로 생성
+        refreshTokenRepository.findByUser_Id(userId)
+                .ifPresentOrElse(
+                        rt -> rt.updateRefreshToken(tokens.getRefreshToken()),
+                        () -> refreshTokenRepository.save(RefreshToken.builder()
+                                .user(user).refreshToken(tokens.getRefreshToken()).build())
+                );
 
         cookieUtil.addCookie(response, "accessToken", tokens.getAccessToken(),
                 (int) (JwtProvider.EXPIRE_ACCESS / 1000), COOKIE_SECURE, COOKIE_SAMESITE);

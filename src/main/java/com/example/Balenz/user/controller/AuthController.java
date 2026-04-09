@@ -1,6 +1,7 @@
 package com.example.Balenz.user.controller;
 
 import com.example.Balenz.global.response.BaseResponse;
+import com.example.Balenz.user.dto.LoginDto;
 import com.example.Balenz.user.dto.SignUpDto;
 import com.example.Balenz.user.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,6 +24,14 @@ public class AuthController {
     public ResponseEntity<?> signup(HttpServletResponse response,
                                     @Valid @RequestBody SignUpDto signUpDto) {
         authService.signUp(response, signUpDto);
+        return ResponseEntity.ok()
+                .body(BaseResponse.success(null));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(HttpServletResponse response,
+                                   @Valid @RequestBody LoginDto loginDto) {
+        authService.login(response, loginDto);
         return ResponseEntity.ok()
                 .body(BaseResponse.success(null));
     }
