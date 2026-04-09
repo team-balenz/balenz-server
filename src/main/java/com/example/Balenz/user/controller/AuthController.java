@@ -4,14 +4,12 @@ import com.example.Balenz.global.response.BaseResponse;
 import com.example.Balenz.user.dto.LoginDto;
 import com.example.Balenz.user.dto.SignUpDto;
 import com.example.Balenz.user.service.AuthService;
+import com.example.Balenz.user.service.TokenService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final TokenService tokenService;
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(HttpServletResponse response,
@@ -32,6 +31,14 @@ public class AuthController {
     public ResponseEntity<?> login(HttpServletResponse response,
                                    @Valid @RequestBody LoginDto loginDto) {
         authService.login(response, loginDto);
+        return ResponseEntity.ok()
+                .body(BaseResponse.success(null));
+    }
+
+    @PostMapping("/reissue")
+    public ResponseEntity<?> reissue(HttpServletResponse response,
+                                     @CookieValue(value = "refreshToken", required = false) String refreshToken) {
+        tokenService.reissue(response, refreshToken);
         return ResponseEntity.ok()
                 .body(BaseResponse.success(null));
     }

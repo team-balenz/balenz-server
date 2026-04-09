@@ -17,14 +17,14 @@ public class SignUpDto {
 
     @NotBlank(message = "password1은 필수입니다.")
     @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@$!%*?&])[A-Za-z[0-9]@$!%*?&]{8,20}$",
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@$!%*?&])[A-Za-z0-9@$!%*?&]{8,20}$",
             message = "비밀번호는 8~ 20자, 대소문자/숫자/특수문자(@$!%*?&)를 모두 포함해야합니다."
     )
     private String password1;
 
     @NotBlank(message = "password2는 필수입니다.")
     @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@$!%*?&])[A-Za-z[0-9]@$!%*?&]{8,20}$",
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@$!%*?&])[A-Za-z0-9@$!%*?&]{8,20}$",
             message = "비밀번호는 8~20자, 대소문자/숫자/특수문자(@$!%*?&)를 포함해야합니다."
     )
     private String password2;

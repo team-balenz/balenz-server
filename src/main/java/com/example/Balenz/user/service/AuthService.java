@@ -2,19 +2,14 @@ package com.example.Balenz.user.service;
 
 import com.example.Balenz.global.exception.BaseException;
 import com.example.Balenz.global.exception.ErrorCode;
-import com.example.Balenz.global.security.CookieUtil;
-import com.example.Balenz.global.security.JwtProvider;
 import com.example.Balenz.user.dto.LoginDto;
 import com.example.Balenz.user.dto.SignUpDto;
 import com.example.Balenz.user.dto.TokenDto;
-import com.example.Balenz.user.entity.RefreshToken;
 import com.example.Balenz.user.entity.Role;
 import com.example.Balenz.user.entity.User;
-import com.example.Balenz.user.repository.RefreshTokenRepository;
 import com.example.Balenz.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,17 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthService {
 
-    @Value("${COOKIE_SAMESITE}")
-    private String COOKIE_SAMESITE;
-
-    @Value("${COOKIE_SECURE}")
-    private boolean COOKIE_SECURE;
-
+    private final TokenService tokenService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final JwtProvider jwtProvider;
-    private final CookieUtil cookieUtil;
 
     @Transactional
     public void signUp(HttpServletResponse response, SignUpDto signUpDto) {
@@ -57,16 +44,8 @@ public class AuthService {
                 .password(encodedPassword)
                 .role(Role.ROLE_USER).build());
 
-        TokenDto tokens = jwtProvider.createTokens(user.getId(), user.getEmail(), user.getRole());
-
-        refreshTokenRepository.save(RefreshToken.builder()
-                .refreshToken(tokens.getRefreshToken())
-                .user(user).build());
-
-        cookieUtil.addCookie(response, "accessToken", tokens.getAccessToken(),
-                (int) (JwtProvider.EXPIRE_ACCESS / 1000), COOKIE_SECURE, COOKIE_SAMESITE);
-        cookieUtil.addCookie(response, "refreshToken", tokens.getRefreshToken(),
-                (int) (JwtProvider.EXPIRE_REFRESH / 1000), COOKIE_SECURE, COOKIE_SAMESITE);
+        TokenDto tokens = tokenService.createAndSaveToken(user.getId());
+        tokenService.setCookie(response, tokens.getAccessToken(), tokens.getRefreshToken());
     }
 
     @Transactional
@@ -80,21 +59,8 @@ public class AuthService {
             throw new BaseException(ErrorCode.LOGIN_FAILED, "잘못된 이메일 혹은 비밀번호입니다.");
         }
 
-        Long userId = user.getId();
-        TokenDto tokens = jwtProvider.createTokens(userId, user.getEmail(), user.getRole());
-
-        // refresh token rotate - 기존 값 있는 경우 갱신, 없으면 새로 생성
-        refreshTokenRepository.findByUser_Id(userId)
-                .ifPresentOrElse(
-                        rt -> rt.updateRefreshToken(tokens.getRefreshToken()),
-                        () -> refreshTokenRepository.save(RefreshToken.builder()
-                                .user(user).refreshToken(tokens.getRefreshToken()).build())
-                );
-
-        cookieUtil.addCookie(response, "accessToken", tokens.getAccessToken(),
-                (int) (JwtProvider.EXPIRE_ACCESS / 1000), COOKIE_SECURE, COOKIE_SAMESITE);
-        cookieUtil.addCookie(response, "refreshToken", tokens.getRefreshToken(),
-                (int) (JwtProvider.EXPIRE_REFRESH / 1000), COOKIE_SECURE, COOKIE_SAMESITE);
+        TokenDto tokens = tokenService.createAndSaveToken(user.getId());
+        tokenService.setCookie(response, tokens.getAccessToken(), tokens.getRefreshToken());
     }
 
 }
