@@ -64,30 +64,31 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     /** 신규 user 생성 + 소셜 계정 연결 */
-    public User createUserWithSocialAccount(Provider provider,
+    private User createUserWithSocialAccount(Provider provider,
                                             String providerUserId,
                                             OAuth2UserInfo userInfo) {
         // name이 null이면 랜덤 생성
-        String name = userInfo.getName();
-        if (name == null || name.isBlank())
-            name = generateTempName();
+        String rawName = userInfo.getName();
+        String name = (rawName == null || rawName.isBlank()) ? generateTempName() : rawName;
 
         // TODO : S3에 디폴트 이미지 등록 후 url 수정
         // imageUrl이 null이면 디폴트 이미지 등록
-        String imageUrl = userInfo.getImageUrl();
-        if (imageUrl == null || imageUrl.isBlank())
-            imageUrl = "default.png";
+        String rawImageUrl = userInfo.getImageUrl();
+        String imageUrl = (rawImageUrl == null || rawImageUrl.isBlank()) ? "default.png" : rawImageUrl;
 
         String email = userInfo.getEmail();
-        if (email == null || email.isBlank())
+        if (email == null || email.isBlank()) {
             throw new BaseException(ErrorCode.EMAIL_REQUIRED, provider + "에서 이메일을 제공받지 못했습니다.");
+        }
 
-        User user = userRepository.save(
-                User.builder().nickname(name)
-                        .imageUrl(imageUrl)
-                        .email(email)
-                        .role(Role.ROLE_USER).build()
-        );
+        // 이미 해당 이메일로 가입한 유저가 있는 경우 연결
+        User user = userRepository.findByEmail(email).orElseGet(() ->
+                userRepository.save(
+                        User.builder()
+                                .nickname(name)
+                                .imageUrl(imageUrl)
+                                .email(email)
+                                .role(Role.ROLE_USER).build()));
 
         SocialAccount socialAccount = SocialAccount.builder()
                 .provider(provider)
