@@ -12,7 +12,6 @@ import com.example.Balenz.user.repository.RefreshTokenRepository;
 import com.example.Balenz.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.stereotype.Service;
@@ -23,12 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class TokenService {
 
     private final CookieUtil cookieUtil;
-    @Value("${COOKIE_SAMESITE}")
-    private String COOKIE_SAMESITE;
-
-    @Value("${COOKIE_SECURE}")
-    private boolean COOKIE_SECURE;
-
     private final JwtProvider jwtProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
@@ -56,7 +49,7 @@ public class TokenService {
             throw new BaseException(ErrorCode.INVALID_TOKEN, "refresh token 값이 올바르지 않습니다.");
 
         TokenDto tokens = createAndSaveToken(userId);
-        setCookie(response, tokens.getAccessToken(), tokens.getRefreshToken());
+        cookieUtil.setTokenCookies(response, tokens.getAccessToken(), tokens.getRefreshToken());
     }
 
     @Transactional
@@ -74,13 +67,6 @@ public class TokenService {
                                 .user(user).refreshToken(tokens.getRefreshToken()).build())
                 );
         return tokens;
-    }
-
-    public void setCookie(HttpServletResponse response, String accessToken, String refreshToken) {
-        cookieUtil.addCookie(response, "accessToken", accessToken,
-                (int) (JwtProvider.EXPIRE_ACCESS / 1000), COOKIE_SECURE, COOKIE_SAMESITE);
-        cookieUtil.addCookie(response, "refreshToken", refreshToken,
-                (int) (JwtProvider.EXPIRE_REFRESH / 1000), COOKIE_SECURE, COOKIE_SAMESITE);
     }
 
 }
