@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Scope extends BaseTimeEntity {
+public class Keyword extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy =  GenerationType.IDENTITY)
@@ -33,7 +33,7 @@ public class Scope extends BaseTimeEntity {
     @Column(nullable = false)
     private Long viewCount = 0L;
 
-    @OneToMany(mappedBy = "scope")
+    @OneToMany(mappedBy = "keyword")
     private List<Article> articles = new ArrayList<>();
 
 }

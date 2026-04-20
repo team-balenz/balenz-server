@@ -1,7 +1,7 @@
 package com.example.Balenz.article.entity;
 
 import com.example.Balenz.global.entity.BaseTimeEntity;
-import com.example.Balenz.scope.entity.Scope;
+import com.example.Balenz.scope.entity.Keyword;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -21,7 +21,7 @@ public class Article extends BaseTimeEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 1000)
     private String articleUrl;
 
     private String summary;
@@ -58,18 +58,18 @@ public class Article extends BaseTimeEntity {
     private NewsAgency newsAgency;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "scope_id", nullable = false)
-    private Scope scope;
+    @JoinColumn(name = "keyword_id", nullable = false)
+    private Keyword keyword;
 
-    public void setScope(Scope scope) {
-        if (this.scope != null) {
-            this.scope.getArticles().remove(this);
+    public void setKeyword(Keyword keyword) {
+        if (this.keyword != null) {
+            this.keyword.getArticles().remove(this);
         }
 
-        this.scope = scope;
+        this.keyword = keyword;
 
-        if (scope != null && !scope.getArticles().contains(this)) {
-            scope.getArticles().add(this);
+        if (keyword != null && !keyword.getArticles().contains(this)) {
+            keyword.getArticles().add(this);
         }
     }
 
