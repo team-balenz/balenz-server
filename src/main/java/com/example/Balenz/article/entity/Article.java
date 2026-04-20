@@ -1,13 +1,14 @@
 package com.example.Balenz.article.entity;
 
 import com.example.Balenz.global.entity.BaseTimeEntity;
-import com.example.Balenz.scope.entity.Keyword;
+import com.example.Balenz.keyword.entity.Keyword;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -21,8 +22,10 @@ public class Article extends BaseTimeEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false, unique = true, length = 1000)
+    @Column(nullable = false, unique = true, length = 500)
     private String articleUrl;
+
+    private String imageUrl;
 
     private String summary;
 
@@ -51,7 +54,7 @@ public class Article extends BaseTimeEntity {
     private Long normUserViewCount = 0L;
 
     @Column(nullable = false)
-    private LocalDateTime publishedAt;
+    private LocalDate publishedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "news_agency_id", nullable = false)
@@ -71,6 +74,22 @@ public class Article extends BaseTimeEntity {
         if (keyword != null && !keyword.getArticles().contains(this)) {
             keyword.getArticles().add(this);
         }
+    }
+
+    @Builder
+    public Article(String title, String articleUrl, String imageUrl, String summary,
+                   Double valueScore, Double normScore, FrameType frameType,
+                   LocalDate publishedAt, NewsAgency newsAgency, Keyword keyword) {
+        this.title = title;
+        this.articleUrl = articleUrl;
+        this.imageUrl = imageUrl;
+        this.summary = summary;
+        this.valueScore = valueScore;
+        this.normScore = normScore;
+        this.frameType = frameType;
+        this.publishedAt = publishedAt;
+        this.newsAgency = newsAgency;
+        this.keyword = keyword;
     }
 
 }

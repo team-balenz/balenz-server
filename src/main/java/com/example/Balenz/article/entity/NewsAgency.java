@@ -3,6 +3,7 @@ package com.example.Balenz.article.entity;
 import com.example.Balenz.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -17,5 +18,10 @@ public class NewsAgency extends BaseTimeEntity {
 
     @Column(nullable = false, unique = true)
     private String name;
+
+    @Builder
+    public NewsAgency(String name) {
+        this.name = name;
+    }
 
 }
