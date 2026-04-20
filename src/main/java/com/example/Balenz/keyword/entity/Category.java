@@ -1,4 +1,4 @@
-package com.example.Balenz.scope.entity;
+package com.example.Balenz.keyword.entity;
 
 public enum Category {
     POLITICS,
