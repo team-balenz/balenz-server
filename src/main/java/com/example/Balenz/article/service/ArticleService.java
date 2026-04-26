@@ -1,7 +1,7 @@
 package com.example.Balenz.article.service;
 
 import com.example.Balenz.article.dto.ArticleDetailDto;
-import com.example.Balenz.article.dto.RelatedArticleDto;
+import com.example.Balenz.article.dto.RelatedArticlesDto;
 import com.example.Balenz.article.entity.Article;
 import com.example.Balenz.article.entity.FrameType;
 import com.example.Balenz.article.repository.ArticleRepository;
@@ -34,31 +34,28 @@ public class ArticleService {
 
         // 연관기사 조회 -> DTO 생성
         Keyword keyword = article.getKeyword();
-        // 1차 - 각 FrameType별로 4개씩 조회
+        // 각 FrameType별로 4개씩 조회
         List<Article> strongValue = articleRepository.findTop4ByKeyword_IdAndFrameTypeAndIdNotOrderByPublishedAtDesc(keyword.getId(), FrameType.STRONG_VALUE, id);
         List<Article> value = articleRepository.findTop4ByKeyword_IdAndFrameTypeAndIdNotOrderByPublishedAtDesc(keyword.getId(), FrameType.VALUE, id);
         List<Article> neutral = articleRepository.findTop4ByKeyword_IdAndFrameTypeAndIdNotOrderByPublishedAtDesc(keyword.getId(), FrameType.NEUTRAL, id);
         List<Article> norm = articleRepository.findTop4ByKeyword_IdAndFrameTypeAndIdNotOrderByPublishedAtDesc(keyword.getId(), FrameType.NORM, id);
         List<Article> strongNorm = articleRepository.findTop4ByKeyword_IdAndFrameTypeAndIdNotOrderByPublishedAtDesc(keyword.getId(), FrameType.STRONG_NORM, id);
 
-        // VALUE
-        List<RelatedArticleDto> valueRelatedArticles = Stream
+        List<RelatedArticlesDto.RelatedArticleDto> valueRelatedArticles = Stream
                 .concat(value.stream(), strongValue.stream())
                 .map(this::toRelatedArticleDto)
                 .collect(Collectors.toList());
 
-        // NORM
-        List<RelatedArticleDto> normRelatedArticles = Stream
+        List<RelatedArticlesDto.RelatedArticleDto> normRelatedArticles = Stream
                 .concat(norm.stream(), strongNorm.stream())
                 .map(this::toRelatedArticleDto)
                 .collect(Collectors.toList());
 
-        // NEUTRAL
-        List<RelatedArticleDto> neutralRelatedArticles = neutral.stream()
+        List<RelatedArticlesDto.RelatedArticleDto> neutralRelatedArticles = neutral.stream()
                 .map(this::toRelatedArticleDto).collect(Collectors.toList());
 
         // 전체 - Value 3 Neutral 4 Norm 3 비율에 맞춰서 생성
-        List<RelatedArticleDto> allRelatedArticles = Stream.of(
+        List<RelatedArticlesDto.RelatedArticleDto> allRelatedArticles = Stream.of(
                 pick(valueRelatedArticles, 3).stream(),
                 pick(neutralRelatedArticles, 4).stream(),
                 pick(normRelatedArticles, 3).stream()
@@ -66,18 +63,21 @@ public class ArticleService {
                 .collect(Collectors.toList());
 
         if (allRelatedArticles.size() < 10) {
-            int remaining = allRelatedArticles.size() - 10;
+            int remaining = 10 - allRelatedArticles.size();
 
             // 전체 후보 풀 만들기
-            List<RelatedArticleDto> pool = Stream.of(
+            List<RelatedArticlesDto.RelatedArticleDto> pool = Stream.of(
                             valueRelatedArticles,
                             neutralRelatedArticles,
-                            normRelatedArticles).flatMap(List::stream)
-                    .distinct()
+                            normRelatedArticles)
+                    .flatMap(List::stream)
                     .collect(Collectors.toList());
 
             // 이미 allRelatedArticles에 들어가있는 것 제외
-            pool.removeAll(allRelatedArticles);
+            pool.removeIf(
+                    a -> allRelatedArticles.stream()
+                            .anyMatch(s -> s.getId().equals(a.getId()))
+            );
 
             // 부족한 만큼 추가
             allRelatedArticles.addAll(pick(pool, remaining));
@@ -99,15 +99,18 @@ public class ArticleService {
                 .frameType(article.getFrameType())
                 .summary(article.getSummary())
                 .articleUrl(article.getArticleUrl())
-                .valueRelatedArticles(shuffle(valueRelatedArticles))
-                .normRelatedArticles(shuffle(normRelatedArticles))
-                .neutralRelatedArticles(shuffle(neutralRelatedArticles))
-                .allRelatedArticles(allRelatedArticles)
+                .relatedArticles(
+                        RelatedArticlesDto.builder()
+                                .all(allRelatedArticles)
+                                .value(valueRelatedArticles)
+                                .neutral(neutralRelatedArticles)
+                                .norm(normRelatedArticles).build()
+                )
                 .hotKeywords(hotKeywords).build();
     }
 
-    private RelatedArticleDto toRelatedArticleDto(Article article) {
-        return RelatedArticleDto.builder()
+    private RelatedArticlesDto.RelatedArticleDto toRelatedArticleDto(Article article) {
+        return RelatedArticlesDto.RelatedArticleDto.builder()
                 .id(article.getId())
                 .title(article.getTitle())
                 .newsAgencyName(article.getNewsAgency().getName())
@@ -116,14 +119,14 @@ public class ArticleService {
                 .summary(article.getSummary()).build();
     }
 
-    private List<RelatedArticleDto> shuffle(List<RelatedArticleDto> list) {
+    private List<RelatedArticlesDto.RelatedArticleDto> shuffle(List<RelatedArticlesDto.RelatedArticleDto> list) {
         Collections.shuffle(list);
         return list;
     }
 
     /** 리스트 shuffle 후 count 개수만큼 뽑기 */
-    private List<RelatedArticleDto> pick(List<RelatedArticleDto> list, int count) {
-        List<RelatedArticleDto> shuffled = shuffle(list);
+    private List<RelatedArticlesDto.RelatedArticleDto> pick(List<RelatedArticlesDto.RelatedArticleDto> list, int count) {
+        List<RelatedArticlesDto.RelatedArticleDto> shuffled = shuffle(list);
 
         return shuffled.stream()
                 .limit(count).collect(Collectors.toList());
