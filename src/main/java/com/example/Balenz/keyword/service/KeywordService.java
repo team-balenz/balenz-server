@@ -59,7 +59,17 @@ public class KeywordService {
 
         // 2-2. KeywordDto 리스트
         List<Keyword> subKeywords = keywords.stream().skip(1).toList();
-        List<ScopeSectionResponseDto.KeywordDto> keywordDtos = subKeywords.stream()
+        List<ScopeSectionResponseDto.KeywordDto> keywordDtos = getKeywordDtos(subKeywords);
+
+
+        return ScopeSectionResponseDto.builder()
+                .mainKeyword(mainKeywordDto)
+                .keywords(keywordDtos).build();
+    }
+
+    /** Keyword 리스트 -> KeywordDto 리스트 */
+    public List<ScopeSectionResponseDto.KeywordDto> getKeywordDtos(List<Keyword> keywords) {
+        return keywords.stream()
                 .map(k -> {
                     ScopeSectionResponseDto.ArticleCountDto countDto = getArticleCount(k.getId());
 
@@ -70,11 +80,6 @@ public class KeywordService {
                             .articleCount(countDto)
                             .dominantFrameType(getDominantArticleFrameType(countDto)).build();
                 }).toList();
-
-
-        return ScopeSectionResponseDto.builder()
-                .mainKeyword(mainKeywordDto)
-                .keywords(keywordDtos).build();
     }
 
     /** 키워드에 해당하는 프레임별 기사 수 */
@@ -130,7 +135,7 @@ public class KeywordService {
                 : now.toLocalDate();
     }
 
-    /** 데이터 사전 저장용 serviceDate 계산 (8시에 공개할 데이터 미리 저장) */
+    /** 데이터 사전 저장용 serviceDate (공개 대상 날짜) 계산 (8시에 공개할 데이터 미리 저장) */
     public LocalDate getPreparedServiceDate() {
         return LocalDate.now();
     }
