@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -22,4 +23,6 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     """, nativeQuery = true)
     Optional<Article> findTopByKeyword_IdAndFrameTypeOrderByViewCountDesc(@Param("keywordId") Long keywordId,
                                                      @Param("frameType") String frameType);
+
+    List<Article> findTop4ByKeyword_IdAndFrameTypeAndIdNotOrderByPublishedAtDesc(Long keywordId, FrameType frameType, Long articleId);
 }

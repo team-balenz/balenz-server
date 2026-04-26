@@ -14,4 +14,5 @@ public interface KeywordRepository extends JpaRepository<Keyword, Long> {
     List<Keyword> findTop7ByCategoryAndServiceDateOrderByViewCountDescIdDesc(Category category, LocalDate serviceDate);
     List<Keyword> findTop7ByServiceDateOrderByViewCountDescIdDesc(LocalDate serviceDate);
     Optional<Keyword> findByNameAndCategoryAndServiceDate(String name, Category category, LocalDate serviceDate);
+    List<Keyword> findTop6ByServiceDateOrderByViewCountDescIdDesc(LocalDate serviceDate);
 }
