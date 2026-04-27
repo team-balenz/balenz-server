@@ -13,6 +13,7 @@ import java.util.Optional;
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Long> {
     long countByKeywordIdAndFrameType(Long keywordId, FrameType frameType);
+    // 키워드 내 각 프레임타입별로 각각 가장 조회수가 높은 기사 조회
     @Query(value = """
         SELECT *
         FROM Article 
@@ -24,5 +25,5 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     Optional<Article> findTopByKeyword_IdAndFrameTypeOrderByViewCountDesc(@Param("keywordId") Long keywordId,
                                                      @Param("frameType") String frameType);
 
-    List<Article> findTop4ByKeyword_IdAndFrameTypeAndIdNotOrderByPublishedAtDesc(Long keywordId, FrameType frameType, Long articleId);
+    List<Article> findTop4ByKeyword_IdAndFrameTypeOrderByPublishedAtDesc(Long keywordId, FrameType frameType);
 }

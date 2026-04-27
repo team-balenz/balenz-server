@@ -92,4 +92,8 @@ public class Article extends BaseTimeEntity {
         this.keyword = keyword;
     }
 
+    public Long getTotalViewCount() {
+        return this.valueUserViewCount + this.neutralUserViewCount + this.normUserViewCount;
+    }
+
 }

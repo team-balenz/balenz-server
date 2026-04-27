@@ -9,14 +9,14 @@ import com.example.Balenz.global.exception.BaseException;
 import com.example.Balenz.global.exception.ErrorCode;
 import com.example.Balenz.keyword.dto.ScopeSectionResponseDto;
 import com.example.Balenz.keyword.entity.Keyword;
-import com.example.Balenz.keyword.repository.KeywordRepository;
 import com.example.Balenz.keyword.service.KeywordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 public class ArticleService {
 
     private final ArticleRepository articleRepository;
-    private final KeywordRepository keywordRepository;
     private final KeywordService keywordService;
 
     public ArticleDetailDto getArticleDetail(Long id) {
@@ -34,16 +33,11 @@ public class ArticleService {
 
         // 연관기사 조회 -> DTO 생성
         Keyword keyword = article.getKeyword();
-        // 각 FrameType별로 4개씩 조회
-        List<Article> strongValue = articleRepository.findTop4ByKeyword_IdAndFrameTypeAndIdNotOrderByPublishedAtDesc(keyword.getId(), FrameType.STRONG_VALUE, id);
-        List<Article> value = articleRepository.findTop4ByKeyword_IdAndFrameTypeAndIdNotOrderByPublishedAtDesc(keyword.getId(), FrameType.VALUE, id);
-        List<Article> neutral = articleRepository.findTop4ByKeyword_IdAndFrameTypeAndIdNotOrderByPublishedAtDesc(keyword.getId(), FrameType.NEUTRAL, id);
-        List<Article> norm = articleRepository.findTop4ByKeyword_IdAndFrameTypeAndIdNotOrderByPublishedAtDesc(keyword.getId(), FrameType.NORM, id);
-        List<Article> strongNorm = articleRepository.findTop4ByKeyword_IdAndFrameTypeAndIdNotOrderByPublishedAtDesc(keyword.getId(), FrameType.STRONG_NORM, id);
+        Set<Long> excludeArticleIds = Set.of(id);
+        RelatedArticlesDto relatedArticlesDto = getRelatedArticlesDto(keyword.getId(), excludeArticleIds);
 
-        RelatedArticlesDto relatedArticlesDto = getRelatedArticlesDto(value, strongValue, norm, strongNorm, neutral);
-
-        List<ScopeSectionResponseDto.KeywordDto> hotKeywords = gethotKeywordDtos();
+        // 인기 scope 조회
+        List<ScopeSectionResponseDto.KeywordDto> hotKeywords = keywordService.getHotKeywordDtos();
 
         return ArticleDetailDto.builder()
                 .title(article.getTitle())
@@ -56,30 +50,27 @@ public class ArticleService {
                 .hotKeywords(hotKeywords).build();
     }
 
-    public List<ScopeSectionResponseDto.KeywordDto> gethotKeywordDtos() {
-        LocalDate serviceDate = keywordService.getCurrentServiceDate();
-        List<Keyword> keywords = keywordRepository.findTop6ByServiceDateOrderByViewCountDescIdDesc(serviceDate);
-        List<ScopeSectionResponseDto.KeywordDto> hotKeywords;
-        if (keywords.isEmpty()) {
-            hotKeywords = List.of();
-        } else {
-            hotKeywords = keywordService.getKeywordDtos(keywords);
-        }
-        return hotKeywords;
-    }
+    public RelatedArticlesDto getRelatedArticlesDto(Long keywordId, Set<Long> excludeArticleIds) {
+        List<Article> strongValue = articleRepository.findTop4ByKeyword_IdAndFrameTypeOrderByPublishedAtDesc(keywordId, FrameType.STRONG_VALUE);
+        List<Article> value = articleRepository.findTop4ByKeyword_IdAndFrameTypeOrderByPublishedAtDesc(keywordId, FrameType.VALUE);
+        List<Article> neutral = articleRepository.findTop4ByKeyword_IdAndFrameTypeOrderByPublishedAtDesc(keywordId, FrameType.NEUTRAL);
+        List<Article> norm = articleRepository.findTop4ByKeyword_IdAndFrameTypeOrderByPublishedAtDesc(keywordId, FrameType.NORM);
+        List<Article> strongNorm = articleRepository.findTop4ByKeyword_IdAndFrameTypeOrderByPublishedAtDesc(keywordId, FrameType.STRONG_NORM);
 
-    public RelatedArticlesDto getRelatedArticlesDto(List<Article> value, List<Article> strongValue, List<Article> norm, List<Article> strongNorm, List<Article> neutral) {
         List<RelatedArticlesDto.RelatedArticleDto> valueRelatedArticles = Stream
                 .concat(value.stream(), strongValue.stream())
+                .filter(article -> !excludeArticleIds.contains(article.getId()))
                 .map(this::toRelatedArticleDto)
                 .collect(Collectors.toList());
 
         List<RelatedArticlesDto.RelatedArticleDto> normRelatedArticles = Stream
                 .concat(norm.stream(), strongNorm.stream())
+                .filter(article -> !excludeArticleIds.contains(article.getId()))
                 .map(this::toRelatedArticleDto)
                 .collect(Collectors.toList());
 
         List<RelatedArticlesDto.RelatedArticleDto> neutralRelatedArticles = neutral.stream()
+                .filter(article -> !excludeArticleIds.contains(article.getId()))
                 .map(this::toRelatedArticleDto).collect(Collectors.toList());
 
         // 전체 - Value 3 Neutral 4 Norm 3 비율에 맞춰서 생성
@@ -118,7 +109,7 @@ public class ArticleService {
                 .norm(normRelatedArticles).build();
     }
 
-    private RelatedArticlesDto.RelatedArticleDto toRelatedArticleDto(Article article) {
+    public RelatedArticlesDto.RelatedArticleDto toRelatedArticleDto(Article article) {
         return RelatedArticlesDto.RelatedArticleDto.builder()
                 .id(article.getId())
                 .title(article.getTitle())
@@ -135,10 +126,9 @@ public class ArticleService {
 
     /** 리스트 shuffle 후 count 개수만큼 뽑기 */
     private List<RelatedArticlesDto.RelatedArticleDto> pick(List<RelatedArticlesDto.RelatedArticleDto> list, int count) {
-        List<RelatedArticlesDto.RelatedArticleDto> shuffled = shuffle(list);
-
-        return shuffled.stream()
-                .limit(count).collect(Collectors.toList());
+        ArrayList<RelatedArticlesDto.RelatedArticleDto> copy = new ArrayList<>(list);
+        Collections.shuffle(copy);
+        return copy;
     }
 
 }
