@@ -41,6 +41,34 @@ public class ArticleService {
         List<Article> norm = articleRepository.findTop4ByKeyword_IdAndFrameTypeAndIdNotOrderByPublishedAtDesc(keyword.getId(), FrameType.NORM, id);
         List<Article> strongNorm = articleRepository.findTop4ByKeyword_IdAndFrameTypeAndIdNotOrderByPublishedAtDesc(keyword.getId(), FrameType.STRONG_NORM, id);
 
+        RelatedArticlesDto relatedArticlesDto = getRelatedArticlesDto(value, strongValue, norm, strongNorm, neutral);
+
+        List<ScopeSectionResponseDto.KeywordDto> hotKeywords = gethotKeywordDtos();
+
+        return ArticleDetailDto.builder()
+                .title(article.getTitle())
+                .newsAgencyName(article.getNewsAgency().getName())
+                .publishedAt(article.getPublishedAt())
+                .frameType(article.getFrameType())
+                .summary(article.getSummary())
+                .articleUrl(article.getArticleUrl())
+                .relatedArticles(relatedArticlesDto)
+                .hotKeywords(hotKeywords).build();
+    }
+
+    public List<ScopeSectionResponseDto.KeywordDto> gethotKeywordDtos() {
+        LocalDate serviceDate = keywordService.getCurrentServiceDate();
+        List<Keyword> keywords = keywordRepository.findTop6ByServiceDateOrderByViewCountDescIdDesc(serviceDate);
+        List<ScopeSectionResponseDto.KeywordDto> hotKeywords;
+        if (keywords.isEmpty()) {
+            hotKeywords = List.of();
+        } else {
+            hotKeywords = keywordService.getKeywordDtos(keywords);
+        }
+        return hotKeywords;
+    }
+
+    public RelatedArticlesDto getRelatedArticlesDto(List<Article> value, List<Article> strongValue, List<Article> norm, List<Article> strongNorm, List<Article> neutral) {
         List<RelatedArticlesDto.RelatedArticleDto> valueRelatedArticles = Stream
                 .concat(value.stream(), strongValue.stream())
                 .map(this::toRelatedArticleDto)
@@ -83,30 +111,11 @@ public class ArticleService {
             allRelatedArticles.addAll(pick(pool, remaining));
         }
 
-        LocalDate serviceDate = keywordService.getCurrentServiceDate();
-        List<Keyword> keywords = keywordRepository.findTop6ByServiceDateOrderByViewCountDescIdDesc(serviceDate);
-        List<ScopeSectionResponseDto.KeywordDto> hotKeywords;
-        if (keywords.isEmpty()) {
-            hotKeywords = List.of();
-        } else {
-            hotKeywords = keywordService.getKeywordDtos(keywords);
-        }
-
-        return ArticleDetailDto.builder()
-                .title(article.getTitle())
-                .newsAgencyName(article.getNewsAgency().getName())
-                .publishedAt(article.getPublishedAt())
-                .frameType(article.getFrameType())
-                .summary(article.getSummary())
-                .articleUrl(article.getArticleUrl())
-                .relatedArticles(
-                        RelatedArticlesDto.builder()
-                                .all(allRelatedArticles)
-                                .value(valueRelatedArticles)
-                                .neutral(neutralRelatedArticles)
-                                .norm(normRelatedArticles).build()
-                )
-                .hotKeywords(hotKeywords).build();
+        return RelatedArticlesDto.builder()
+                .all(allRelatedArticles)
+                .value(valueRelatedArticles)
+                .neutral(neutralRelatedArticles)
+                .norm(normRelatedArticles).build();
     }
 
     private RelatedArticlesDto.RelatedArticleDto toRelatedArticleDto(Article article) {
