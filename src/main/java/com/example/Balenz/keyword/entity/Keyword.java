@@ -55,4 +55,8 @@ public class Keyword extends BaseTimeEntity {
         this.serviceDate = serviceDate;
     }
 
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
+
 }

@@ -67,4 +67,10 @@ public class AuthService {
         cookieUtil.setTokenCookies(response, tokens.getAccessToken(), tokens.getRefreshToken());
     }
 
+    /** 현재 로그인한 User 조회 */
+    public User getCurrentUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+    }
+
 }

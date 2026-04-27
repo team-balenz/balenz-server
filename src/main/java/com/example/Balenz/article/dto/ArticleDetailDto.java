@@ -33,13 +33,7 @@ public class ArticleDetailDto {
 
     private String articleUrl;
 
-    private List<RelatedArticleDto> allRelatedArticles;
-
-    private List<RelatedArticleDto> valueRelatedArticles;
-
-    private List<RelatedArticleDto> neutralRelatedArticles;
-
-    private List<RelatedArticleDto> normRelatedArticles;
+    private RelatedArticlesDto relatedArticles;
 
     private List<ScopeSectionResponseDto.KeywordDto> hotKeywords;
 

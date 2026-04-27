@@ -83,7 +83,7 @@ public class KeywordService {
     }
 
     /** 키워드에 해당하는 프레임별 기사 수 */
-    private ScopeSectionResponseDto.ArticleCountDto getArticleCount(Long keywordId) {
+    public ScopeSectionResponseDto.ArticleCountDto getArticleCount(Long keywordId) {
         long valueCount = articleRepository.countByKeywordIdAndFrameType(keywordId, FrameType.VALUE);
         long neutralCount = articleRepository.countByKeywordIdAndFrameType(keywordId, FrameType.NEUTRAL);
         long normCount = articleRepository.countByKeywordIdAndFrameType(keywordId, FrameType.NORM);
@@ -107,7 +107,7 @@ public class KeywordService {
     }
 
     /** 키워드 관련 기사 중 어떤 프레임의 기사가 가장 많은지 반환 **/
-    private DominantFrameType getDominantArticleFrameType(ScopeSectionResponseDto.ArticleCountDto countDto) {
+    public DominantFrameType getDominantArticleFrameType(ScopeSectionResponseDto.ArticleCountDto countDto) {
         Long value = countDto.getValue();
         Long neutral = countDto.getNeutral();
         Long norm = countDto.getNorm();
@@ -138,6 +138,30 @@ public class KeywordService {
     /** 데이터 사전 저장용 serviceDate (공개 대상 날짜) 계산 (8시에 공개할 데이터 미리 저장) */
     public LocalDate getPreparedServiceDate() {
         return LocalDate.now();
+    }
+
+
+    public List<ScopeSectionResponseDto.KeywordDto> getHotKeywordDtos() {
+        LocalDate serviceDate = getCurrentServiceDate();
+        List<Keyword> keywords = keywordRepository.findTop6ByServiceDateOrderByViewCountDescIdDesc(serviceDate);
+        List<ScopeSectionResponseDto.KeywordDto> hotKeywords;
+        if (keywords.isEmpty()) {
+            hotKeywords = List.of();
+        } else {
+            hotKeywords = getKeywordDtos(keywords);
+        }
+        return hotKeywords;
+    }
+
+    /** 편향 분포 계산 */
+    public int getBias(DominantFrameType dominantFrameType, ScopeSectionResponseDto.ArticleCountDto articleCount) {
+        double maxRatio = switch (dominantFrameType) {
+            case VALUE -> articleCount.getValueRatio();
+            case NEUTRAL -> articleCount.getNeutralRatio();
+            case NORM -> articleCount.getNormRatio();
+            case BALANCED -> 0;
+        };
+        return (int) Math.round(maxRatio * 100);
     }
 
 }
