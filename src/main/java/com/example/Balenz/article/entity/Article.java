@@ -96,4 +96,16 @@ public class Article extends BaseTimeEntity {
         return this.valueUserViewCount + this.neutralUserViewCount + this.normUserViewCount;
     }
 
+    public void increaseValueUserViewCount() {
+        this.valueUserViewCount++;
+    }
+
+    public void increaseNeutralUserViewCount() {
+        this.neutralUserViewCount++;
+    }
+
+    public void increaseNormUserViewCount() {
+        this.normUserViewCount++;
+    }
+
 }

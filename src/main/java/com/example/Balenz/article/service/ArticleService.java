@@ -10,8 +10,12 @@ import com.example.Balenz.global.exception.ErrorCode;
 import com.example.Balenz.keyword.dto.ScopeSectionResponseDto;
 import com.example.Balenz.keyword.entity.Keyword;
 import com.example.Balenz.keyword.service.KeywordService;
+import com.example.Balenz.user.entity.Ideology;
+import com.example.Balenz.user.entity.User;
+import com.example.Balenz.user.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,14 +30,29 @@ public class ArticleService {
 
     private final ArticleRepository articleRepository;
     private final KeywordService keywordService;
+    private final AuthService authService;
 
-    public ArticleDetailDto getArticleDetail(Long id) {
-        Article article = articleRepository.findById(id).orElseThrow(
+    @Transactional
+    public ArticleDetailDto getArticleDetail(Long articleId, Long userId) {
+        User user = authService.getCurrentUser(userId);
+
+
+        Article article = articleRepository.findById(articleId).orElseThrow(
                 () -> new BaseException(ErrorCode.ARTICLE_NOT_FOUND, "해당 id의 기사를 찾을 수 없습니다."));
+
+        // user의 ideology에 따라 기사 조회수 증가
+        Ideology ideology = user.getIdeology();
+        if (ideology != null) {
+            switch (ideology) {
+                case VALUE -> article.increaseValueUserViewCount();
+                case NEUTRAL -> article.increaseNeutralUserViewCount();
+                case NORM -> article.increaseNormUserViewCount();
+            }
+        }
 
         // 연관기사 조회 -> DTO 생성
         Keyword keyword = article.getKeyword();
-        Set<Long> excludeArticleIds = Set.of(id);
+        Set<Long> excludeArticleIds = Set.of(articleId);
         RelatedArticlesDto relatedArticlesDto = getRelatedArticlesDto(keyword.getId(), excludeArticleIds);
 
         // 인기 scope 조회
