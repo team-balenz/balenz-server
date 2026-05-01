@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserKeywordScrapRepository extends JpaRepository<UserKeywordScrap, Long> {
+    boolean existsByUser_IdAndKeyword_Id(Long userId, Long keywordId);
 }
