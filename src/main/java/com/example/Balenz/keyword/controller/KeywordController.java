@@ -1,5 +1,6 @@
 package com.example.Balenz.keyword.controller;
 
+import com.example.Balenz.global.response.BaseResponse;
 import com.example.Balenz.keyword.dto.KeywordDetailDto;
 import com.example.Balenz.keyword.dto.ScopeSectionResponseDto;
 import com.example.Balenz.keyword.entity.Category;
@@ -20,14 +21,13 @@ public class KeywordController {
     @GetMapping("/ideology/keyword")
     public ResponseEntity<?> getScopeData(@RequestParam(required = false) Category category) {
         ScopeSectionResponseDto scopeSectionData = keywordService.getScopeSectionData(category);
-        return ResponseEntity.ok()
-                .body(scopeSectionData);
+        return ResponseEntity.ok().body(BaseResponse.success(scopeSectionData));
     }
 
     @GetMapping("/keyword/{keywordId}")
     public ResponseEntity<?> getKeywordDetail(@PathVariable Long keywordId) {
         KeywordDetailDto keywordDetail = keywordDetailService.getKeywordDetail(keywordId);
-        return ResponseEntity.ok().body(keywordDetail);
+        return ResponseEntity.ok().body(BaseResponse.success(keywordDetail));
     }
 
 }

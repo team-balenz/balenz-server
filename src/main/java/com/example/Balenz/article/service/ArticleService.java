@@ -36,7 +36,6 @@ public class ArticleService {
     public ArticleDetailDto getArticleDetail(Long articleId, Long userId) {
         User user = authService.getCurrentUser(userId);
 
-
         Article article = articleRepository.findById(articleId).orElseThrow(
                 () -> new BaseException(ErrorCode.ARTICLE_NOT_FOUND, "해당 id의 기사를 찾을 수 없습니다."));
 
@@ -59,6 +58,7 @@ public class ArticleService {
         List<ScopeSectionResponseDto.KeywordDto> hotKeywords = keywordService.getHotKeywordDtos();
 
         return ArticleDetailDto.builder()
+                .id(article.getId())
                 .title(article.getTitle())
                 .newsAgencyName(article.getNewsAgency().getName())
                 .publishedAt(article.getPublishedAt())

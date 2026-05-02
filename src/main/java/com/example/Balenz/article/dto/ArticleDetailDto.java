@@ -12,6 +12,7 @@ import java.util.List;
 @Data
 @Builder
 @JsonPropertyOrder({
+        "id",
         "title",
         "newsAgencyName",
         "publishedAt",
@@ -20,6 +21,8 @@ import java.util.List;
         "articleUrl"
 })
 public class ArticleDetailDto {
+
+    private Long id;
 
     private String title;
 
