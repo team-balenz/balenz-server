@@ -2,6 +2,7 @@ package com.example.Balenz.article.controller;
 
 import com.example.Balenz.article.dto.ArticleDetailDto;
 import com.example.Balenz.article.service.ArticleService;
+import com.example.Balenz.global.response.BaseResponse;
 import com.example.Balenz.global.security.CustomPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class ArticleController {
     public ResponseEntity<?> getArticleDetail(@PathVariable Long articleId,
                                               @AuthenticationPrincipal CustomPrincipal customPrincipal) {
         ArticleDetailDto articleDetail = articleService.getArticleDetail(articleId, customPrincipal.getId());
-        return ResponseEntity.ok().body(articleDetail);
+        return ResponseEntity.ok().body(BaseResponse.success(articleDetail));
     }
 
 }
