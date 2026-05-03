@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,11 +48,23 @@ public class HotKeywordService {
             List<Article> strongNorm = articleRepository.findTop2ByKeyword_IdAndFrameTypeOrderByViewCountDesc(keyword.getId(), FrameType.STRONG_NORM.name());
 
             // 각 프레임타입별로 기사 2개씩 조회 후 그 중 랜덤으로 2개 반환
-            List<Article> candidates
-                    = Stream.of(strongValue.stream(), value.stream(), neutral.stream(), norm.stream(), strongNorm.stream())
-                    .flatMap(s -> s).toList();
+            List<Article> valueCandidates = Stream.concat(strongValue.stream(), value.stream()).toList();
+            List<Article> normCandidates = Stream.concat(strongNorm.stream(), norm.stream()).toList();
 
-            List<SimpleArticleDto> articles = pick(candidates, 2).stream()
+            // 3. value에서 1개, norm에서 1개 선택
+            List<Article> selectedArticles = new ArrayList<>();
+
+            pickOne(valueCandidates).ifPresent(selectedArticles::add);
+            pickOne(normCandidates).ifPresent(selectedArticles::add);
+
+            // 4. 선택된 기사 개수 합이 2가 아닌 경우 남은 건 neutral에서
+            fillRemaining(selectedArticles, neutral);
+
+            // 5. 그래도 2개가 안되는 경우 value나 neutral에서 추가
+            fillRemaining(selectedArticles, valueCandidates);
+            fillRemaining(selectedArticles, normCandidates);
+
+            List<SimpleArticleDto> articles = selectedArticles.stream()
                     .map(this::toSimpleArticleDto).toList();
 
             HotIssueDataDto.KeywordAndArticleDto keywordAndArticle = HotIssueDataDto.KeywordAndArticleDto.builder()
@@ -74,12 +87,30 @@ public class HotKeywordService {
                 .frameType(article.getFrameType()).build();
     }
 
-    private List<Article> pick(List<Article> list, int count) {
-        ArrayList<Article> copy = new ArrayList<>(list);
+    private Optional<Article> pickOne(List<Article> articles) {
+        return pick(articles, 1).stream().findFirst();
+    }
+
+    private List<Article> pick(List<Article> articles, int count) {
+        ArrayList<Article> copy = new ArrayList<>(articles);
         Collections.shuffle(copy);
         return copy.stream()
                 .limit(count)
                 .collect(Collectors.toList());
+    }
+
+    /** 선택된 기사 개수가 2 미만일 경우 채우기 */
+    private void fillRemaining(List<Article> selected, List<Article> source) {
+        if (selected.size() >= 2) return;
+
+        List<Long> selectedIds = selected.stream()
+                .map(Article::getId).toList();
+
+        List<Article> candidates = source.stream()
+                .filter(a -> !selectedIds.contains(a.getId())) // 중복 방지
+                .toList();
+
+        selected.addAll(pick(candidates, 2 - selectedIds.size()));
     }
 
 }
