@@ -138,16 +138,13 @@ public class ArticleService {
                 .summary(article.getSummary()).build();
     }
 
-    private List<RelatedArticlesDto.RelatedArticleDto> shuffle(List<RelatedArticlesDto.RelatedArticleDto> list) {
-        Collections.shuffle(list);
-        return list;
-    }
-
     /** 리스트 shuffle 후 count 개수만큼 뽑기 */
     private List<RelatedArticlesDto.RelatedArticleDto> pick(List<RelatedArticlesDto.RelatedArticleDto> list, int count) {
         ArrayList<RelatedArticlesDto.RelatedArticleDto> copy = new ArrayList<>(list);
         Collections.shuffle(copy);
-        return copy;
+        return copy.stream()
+                .limit(count)
+                .collect(Collectors.toList());
     }
 
 }

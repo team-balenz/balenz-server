@@ -26,4 +26,14 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
                                                      @Param("frameType") String frameType);
 
     List<Article> findTop4ByKeyword_IdAndFrameTypeOrderByPublishedAtDesc(Long keywordId, FrameType frameType);
+    @Query(value = """
+        SELECT *
+        FROM Article 
+        WHERE keyword_id = :keywordId
+          AND frame_type = :frameType
+        ORDER BY (value_user_view_count + neutral_user_view_count + norm_user_view_count) DESC, id ASC
+        LIMIT 2
+    """, nativeQuery = true)
+    List<Article> findTop2ByKeyword_IdAndFrameTypeOrderByViewCountDesc(@Param("keywordId") Long keywordId,
+                                                                          @Param("frameType") String frameType);
 }
