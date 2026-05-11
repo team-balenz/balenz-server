@@ -24,6 +24,7 @@ public enum ErrorCode {
 
     // 기사 관련
     ARTICLE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 기사를 찾을 수 없습니다."),
+    ARTICLE_SCRAP_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 해당 기사 스크랩이 존재합니다."),
 
     // 키워드 관련
     KEYWORD_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 키워드를 찾을 수 없습니다."),
