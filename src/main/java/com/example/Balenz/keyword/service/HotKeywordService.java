@@ -84,7 +84,8 @@ public class HotKeywordService {
                 .id(article.getId())
                 .title(article.getTitle())
                 .newsAgencyName(article.getNewsAgency().getName())
-                .frameType(article.getFrameType()).build();
+                .frameType(article.getFrameType())
+                .imageUrl(article.getImageUrl()).build();
     }
 
     private Optional<Article> pickOne(List<Article> articles) {

@@ -4,7 +4,7 @@ import com.example.Balenz.article.dto.RelatedArticlesDto;
 import com.example.Balenz.article.entity.Article;
 import com.example.Balenz.article.entity.FrameType;
 import com.example.Balenz.article.repository.ArticleRepository;
-import com.example.Balenz.article.service.ArticleService;
+import com.example.Balenz.article.service.ArticleDetailService;
 import com.example.Balenz.global.exception.BaseException;
 import com.example.Balenz.global.exception.ErrorCode;
 import com.example.Balenz.keyword.dto.KeywordDetailDto;
@@ -29,7 +29,7 @@ public class KeywordDetailService {
     private final KeywordRepository keywordRepository;
     private final ArticleRepository articleRepository;
     private final KeywordService keywordService;
-    private final ArticleService articleService;
+    private final ArticleDetailService articleDetailService;
 
     @Transactional
     public KeywordDetailDto getKeywordDetail(Long id) {
@@ -52,7 +52,7 @@ public class KeywordDetailService {
 
         // 연관기사 조회 (메인 기사는 제외)
         Set<Long> mainArticleIds = getMainArticleIds(mainArticles);
-        RelatedArticlesDto relatedArticlesDto = articleService.getRelatedArticlesDto(id, mainArticleIds);
+        RelatedArticlesDto relatedArticlesDto = articleDetailService.getRelatedArticlesDto(id, mainArticleIds);
 
         return KeywordDetailDto.builder()
                 .id(id)
@@ -90,7 +90,7 @@ public class KeywordDetailService {
         // NEUTRAL 프레임 메인 기사
         RelatedArticlesDto.RelatedArticleDto mainNeutralDto = null;
         if (mainNeutralArticle != null) {
-            mainNeutralDto = articleService.toRelatedArticleDto(mainNeutralArticle);
+            mainNeutralDto = articleDetailService.toRelatedArticleDto(mainNeutralArticle);
         }
 
         // NORM 프레임 (STRONG_NORM / NORM) 메인 기사
@@ -106,14 +106,14 @@ public class KeywordDetailService {
     private RelatedArticlesDto.RelatedArticleDto getMainArticle(Article article1, Article article2) {
         if (article1 != null && article2 != null) { // 둘 다 null이 아니면 둘 중 조회수 더 많은 것이 메인
             if (article1.getTotalViewCount() > article2.getTotalViewCount()) {
-                return articleService.toRelatedArticleDto(article1);
+                return articleDetailService.toRelatedArticleDto(article1);
             } else {
-                return articleService.toRelatedArticleDto(article2);
+                return articleDetailService.toRelatedArticleDto(article2);
             }
         } else if (article1 != null) {
-            return articleService.toRelatedArticleDto(article1);
+            return articleDetailService.toRelatedArticleDto(article1);
         } else if (article2 != null) {
-            return articleService.toRelatedArticleDto(article2);
+            return articleDetailService.toRelatedArticleDto(article2);
         }
         return null;
     }
