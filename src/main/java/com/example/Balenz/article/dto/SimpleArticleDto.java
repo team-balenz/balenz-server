@@ -16,4 +16,6 @@ public class SimpleArticleDto {
 
     private FrameType frameType;
 
+    private String imageUrl;
+
 }

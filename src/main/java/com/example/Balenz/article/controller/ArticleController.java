@@ -1,6 +1,8 @@
 package com.example.Balenz.article.controller;
 
 import com.example.Balenz.article.dto.ArticleDetailDto;
+import com.example.Balenz.article.dto.ArticlesByIdeologyInterestDto;
+import com.example.Balenz.article.service.ArticleDetailService;
 import com.example.Balenz.article.service.ArticleService;
 import com.example.Balenz.global.response.BaseResponse;
 import com.example.Balenz.global.security.CustomPrincipal;
@@ -14,16 +16,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/article")
+@RequestMapping("/api")
 public class ArticleController {
 
+    private final ArticleDetailService articleDetailService;
     private final ArticleService articleService;
 
-    @GetMapping("/{articleId}")
+    @GetMapping("/article/{articleId}")
     public ResponseEntity<?> getArticleDetail(@PathVariable Long articleId,
                                               @AuthenticationPrincipal CustomPrincipal customPrincipal) {
-        ArticleDetailDto articleDetail = articleService.getArticleDetail(articleId, customPrincipal.getId());
+        ArticleDetailDto articleDetail = articleDetailService.getArticleDetail(articleId, customPrincipal.getId());
         return ResponseEntity.ok().body(BaseResponse.success(articleDetail));
+    }
+
+    @GetMapping("/ideology/article/interest")
+    public ResponseEntity<?> getArticlesByIdeologyInterest() {
+        ArticlesByIdeologyInterestDto articlesByIdeologyInterest = articleService.getArticlesByIdeologyInterest();
+        return ResponseEntity.ok().body(BaseResponse.success(articlesByIdeologyInterest));
     }
 
 }
