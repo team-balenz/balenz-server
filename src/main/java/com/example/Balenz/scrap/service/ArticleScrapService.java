@@ -21,20 +21,27 @@ public class ArticleScrapService {
     private final UserArticleScrapRepository userArticleScrapRepository;
 
     @Transactional
-    public void scrapArticle(Long articleId, Long userId) {
+    public boolean scrapArticle(Long articleId, Long userId) {
+        UserArticleScrap scrap = userArticleScrapRepository.findByUser_IdAndArticle_Id(userId, articleId)
+                .orElse(null);
+
+        // 이미 스크랩한 기사인 경우 스크랩 취소
+        if (scrap != null) {
+            userArticleScrapRepository.delete(scrap);
+            return false;
+        }
+
         User user = authService.getCurrentUser(userId);
 
         Article article = articleRepository.findById(articleId).orElseThrow(
                 () -> new BaseException(ErrorCode.ARTICLE_NOT_FOUND, "해당 id의 기사를 찾을 수 없습니다."));
 
-        if (userArticleScrapRepository.existsByUser_IdAndArticle_Id(userId, articleId)) {
-            throw new BaseException(ErrorCode.ARTICLE_SCRAP_ALREADY_EXISTS, "이미 스크랩한 기사입니다.");
-        }
-
         userArticleScrapRepository.save(
                 UserArticleScrap.builder()
                         .user(user)
                         .article(article).build());
+
+        return true;
     }
 
 }

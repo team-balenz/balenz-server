@@ -21,8 +21,8 @@ public class ArticleScrapController {
     @PostMapping("/article/{articleId}/scrap")
     public ResponseEntity<?> scrapArticle(@PathVariable Long articleId,
                                           @AuthenticationPrincipal CustomPrincipal customPrincipal) {
-        articleScrapService.scrapArticle(articleId, customPrincipal.getId());
-        return ResponseEntity.ok().body(BaseResponse.success(null));
+        boolean isScraped = articleScrapService.scrapArticle(articleId, customPrincipal.getId());
+        return ResponseEntity.ok().body(BaseResponse.success(isScraped));
     }
 
 }

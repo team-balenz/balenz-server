@@ -21,8 +21,8 @@ public class KeywordScrapController {
     @PostMapping("/keyword/{keywordId}/scrap")
     public ResponseEntity<?> scrapKeyword(@PathVariable Long keywordId,
                                           @AuthenticationPrincipal CustomPrincipal customPrincipal) {
-        keywordScrapService.scrapKeyword(keywordId, customPrincipal.getId());
-        return ResponseEntity.ok().body(BaseResponse.success(null));
+        boolean isScraped = keywordScrapService.scrapKeyword(keywordId, customPrincipal.getId());
+        return ResponseEntity.ok().body(BaseResponse.success(isScraped));
     }
 
 }
