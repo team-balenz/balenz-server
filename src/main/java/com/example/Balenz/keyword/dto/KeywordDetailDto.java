@@ -42,6 +42,8 @@ public class KeywordDetailDto {
 
     private List<ScopeSectionResponseDto.KeywordDto> hotKeywords;
 
+    private boolean scraped;
+
     @Data
     @Builder
     public static class MainArticlesDto {

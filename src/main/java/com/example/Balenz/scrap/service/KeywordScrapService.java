@@ -21,20 +21,27 @@ public class KeywordScrapService {
     private final UserKeywordScrapRepository userKeywordScrapRepository;
 
     @Transactional
-    public void scrapKeyword(Long keywordId, Long userId) {
+    public boolean scrapKeyword(Long keywordId, Long userId) {
+        UserKeywordScrap scrap = userKeywordScrapRepository.findByUser_IdAndKeyword_Id(userId, keywordId)
+                .orElse(null);
+
+        // 이미 스크랩한 키워드인 경우 스크랩 취소
+        if (scrap != null) {
+            userKeywordScrapRepository.delete(scrap);
+            return false;
+        }
+
         User user = authService.getCurrentUser(userId);
 
         Keyword keyword = keywordRepository.findById(keywordId).orElseThrow(
                 () -> new BaseException(ErrorCode.KEYWORD_NOT_FOUND, "해당 id의 키워드를 찾을 수 없습니다."));
 
-        if (userKeywordScrapRepository.existsByUser_IdAndKeyword_Id(userId, keywordId)) {
-            throw new BaseException(ErrorCode.KEYWORD_SCRAP_ALREADY_EXISTS, "이미 스크랩한 키워드입니다.");
-        }
-
         userKeywordScrapRepository.save(
                 UserKeywordScrap.builder()
                         .user(user)
                         .keyword(keyword).build());
+
+        return true;
     }
 
 }

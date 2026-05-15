@@ -12,6 +12,7 @@ import com.example.Balenz.keyword.dto.ScopeSectionResponseDto;
 import com.example.Balenz.keyword.entity.DominantFrameType;
 import com.example.Balenz.keyword.entity.Keyword;
 import com.example.Balenz.keyword.repository.KeywordRepository;
+import com.example.Balenz.scrap.repository.UserKeywordScrapRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,17 +31,18 @@ public class KeywordDetailService {
     private final ArticleRepository articleRepository;
     private final KeywordService keywordService;
     private final ArticleDetailService articleDetailService;
+    private final UserKeywordScrapRepository userKeywordScrapRepository;
 
     @Transactional
-    public KeywordDetailDto getKeywordDetail(Long id) {
-        Keyword keyword = keywordRepository.findById(id).orElseThrow(
+    public KeywordDetailDto getKeywordDetail(Long keywordId, Long userId) {
+        Keyword keyword = keywordRepository.findById(keywordId).orElseThrow(
                 () -> new BaseException(ErrorCode.KEYWORD_NOT_FOUND, "해당 id의 키워드를 찾을 수 없습니다."));
 
         // 조회수 증가
         keyword.increaseViewCount();
 
         // 프레임별 기사 개수 조회 및 편향 분포 계산
-        ScopeSectionResponseDto.ArticleCountDto articleCount = keywordService.getArticleCount(id);
+        ScopeSectionResponseDto.ArticleCountDto articleCount = keywordService.getArticleCount(keywordId);
         DominantFrameType dominantFrameType = keywordService.getDominantArticleFrameType(articleCount);
         int bias = keywordService.getBias(dominantFrameType, articleCount);
 
@@ -48,14 +50,20 @@ public class KeywordDetailService {
         List<ScopeSectionResponseDto.KeywordDto> hotKeywords = keywordService.getHotKeywordDtos();
 
         // 프레임 타입별 메인 기사 (조회수가 가장 높은 기사) 조회
-        KeywordDetailDto.MainArticlesDto mainArticles = getMainArticleDtos(id);
+        KeywordDetailDto.MainArticlesDto mainArticles = getMainArticleDtos(keywordId);
 
         // 연관기사 조회 (메인 기사는 제외)
         Set<Long> mainArticleIds = getMainArticleIds(mainArticles);
-        RelatedArticlesDto relatedArticlesDto = articleDetailService.getRelatedArticlesDto(id, mainArticleIds);
+        RelatedArticlesDto relatedArticlesDto = articleDetailService.getRelatedArticlesDto(keywordId, mainArticleIds);
+
+        // 스크랩 여부 조회
+        boolean isScraped = false;
+        if (userId != null) {
+            isScraped = userKeywordScrapRepository.existsByUser_IdAndKeyword_Id(userId, keywordId);
+        }
 
         return KeywordDetailDto.builder()
-                .id(id)
+                .id(keywordId)
                 .name(keyword.getName())
                 .imageUrl(keyword.getThumbnailUrl())
                 .date(keyword.getServiceDate())
@@ -66,7 +74,8 @@ public class KeywordDetailService {
                 .dominantFrameType(dominantFrameType)
                 .mainArticles(mainArticles)
                 .relatedArticles(relatedArticlesDto)
-                .hotKeywords(hotKeywords).build();
+                .hotKeywords(hotKeywords)
+                .scraped(isScraped).build();
     }
 
     private Set<Long> getMainArticleIds(KeywordDetailDto.MainArticlesDto mainArticles) {
