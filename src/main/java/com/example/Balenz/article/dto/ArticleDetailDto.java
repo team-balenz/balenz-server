@@ -40,4 +40,6 @@ public class ArticleDetailDto {
 
     private List<ScopeSectionResponseDto.KeywordDto> hotKeywords;
 
+    private boolean isScraped;
+
 }

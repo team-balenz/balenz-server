@@ -10,6 +10,7 @@ import com.example.Balenz.global.exception.ErrorCode;
 import com.example.Balenz.keyword.dto.ScopeSectionResponseDto;
 import com.example.Balenz.keyword.entity.Keyword;
 import com.example.Balenz.keyword.service.KeywordService;
+import com.example.Balenz.scrap.repository.UserArticleScrapRepository;
 import com.example.Balenz.user.entity.Ideology;
 import com.example.Balenz.user.entity.User;
 import com.example.Balenz.user.service.AuthService;
@@ -31,23 +32,36 @@ public class ArticleDetailService {
     private final ArticleRepository articleRepository;
     private final KeywordService keywordService;
     private final AuthService authService;
+    private final UserArticleScrapRepository userArticleScrapRepository;
 
     @Transactional
     public ArticleDetailDto getArticleDetail(Long articleId, Long userId) {
-        User user = authService.getCurrentUser(userId);
 
         Article article = articleRepository.findById(articleId).orElseThrow(
                 () -> new BaseException(ErrorCode.ARTICLE_NOT_FOUND, "해당 id의 기사를 찾을 수 없습니다."));
 
-        // user의 ideology에 따라 기사 조회수 증가
-        Ideology ideology = user.getIdeology();
-        if (ideology != null) {
-            switch (ideology) {
-                case VALUE -> article.increaseValueUserViewCount();
-                case NEUTRAL -> article.increaseNeutralUserViewCount();
-                case NORM -> article.increaseNormUserViewCount();
+        boolean isScraped = false;
+
+        if (userId != null) {
+            User user = authService.getCurrentUser(userId);
+
+            // user의 ideology에 따라 기사 조회수 증가
+            // ideology가 설정되어있지 않거나 비로그인 사용자인 경우 조회수 세 가지 모두 증가
+            Ideology ideology = user.getIdeology();
+            if (ideology != null) {
+                switch (ideology) {
+                    case VALUE -> article.increaseValueUserViewCount();
+                    case NEUTRAL -> article.increaseNeutralUserViewCount();
+                    case NORM -> article.increaseNormUserViewCount();
+                }
+            } else {
+                article.increaseValueUserViewCount();
+                article.increaseNeutralUserViewCount();
+                article.increaseNormUserViewCount();
             }
-        } else { // ideology가 설정되어있지 않은 경우는 세 가지 모두 증가
+
+            isScraped = userArticleScrapRepository.existsByUser_IdAndArticle_Id(userId, articleId);
+        } else {
             article.increaseValueUserViewCount();
             article.increaseNeutralUserViewCount();
             article.increaseNormUserViewCount();
@@ -70,7 +84,8 @@ public class ArticleDetailService {
                 .summary(article.getSummary())
                 .articleUrl(article.getArticleUrl())
                 .relatedArticles(relatedArticlesDto)
-                .hotKeywords(hotKeywords).build();
+                .hotKeywords(hotKeywords)
+                .isScraped(isScraped).build();
     }
 
     public RelatedArticlesDto getRelatedArticlesDto(Long keywordId, Set<Long> excludeArticleIds) {

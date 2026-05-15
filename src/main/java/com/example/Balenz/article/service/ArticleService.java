@@ -18,8 +18,6 @@ public class ArticleService {
 
     private final ArticleRepository articleRepository;
     private final KeywordService keywordService;
-    private final HotKeywordService hotKeywordService;
-
     public ArticlesByIdeologyInterestDto getArticlesByIdeologyInterest() {
         LocalDate serviceDate = keywordService.getCurrentServiceDate();
         List<Article> top8ValueUserViewCountArticles = articleRepository.findTop8ByKeyword_ServiceDateOrderByValueUserViewCountDesc(serviceDate);

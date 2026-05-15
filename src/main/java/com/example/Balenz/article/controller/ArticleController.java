@@ -25,7 +25,8 @@ public class ArticleController {
     @GetMapping("/article/{articleId}")
     public ResponseEntity<?> getArticleDetail(@PathVariable Long articleId,
                                               @AuthenticationPrincipal CustomPrincipal customPrincipal) {
-        ArticleDetailDto articleDetail = articleDetailService.getArticleDetail(articleId, customPrincipal.getId());
+        Long userId = customPrincipal != null ? customPrincipal.getId() : null;
+        ArticleDetailDto articleDetail = articleDetailService.getArticleDetail(articleId, userId);
         return ResponseEntity.ok().body(BaseResponse.success(articleDetail));
     }
 
