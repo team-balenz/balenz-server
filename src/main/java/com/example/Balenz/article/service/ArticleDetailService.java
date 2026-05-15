@@ -47,6 +47,10 @@ public class ArticleDetailService {
                 case NEUTRAL -> article.increaseNeutralUserViewCount();
                 case NORM -> article.increaseNormUserViewCount();
             }
+        } else { // ideology가 설정되어있지 않은 경우는 세 가지 모두 증가
+            article.increaseValueUserViewCount();
+            article.increaseNeutralUserViewCount();
+            article.increaseNormUserViewCount();
         }
 
         // 연관기사 조회 -> DTO 생성
