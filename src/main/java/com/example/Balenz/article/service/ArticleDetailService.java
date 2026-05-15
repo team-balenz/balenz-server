@@ -85,7 +85,7 @@ public class ArticleDetailService {
                 .articleUrl(article.getArticleUrl())
                 .relatedArticles(relatedArticlesDto)
                 .hotKeywords(hotKeywords)
-                .isScraped(isScraped).build();
+                .scraped(isScraped).build();
     }
 
     public RelatedArticlesDto getRelatedArticlesDto(Long keywordId, Set<Long> excludeArticleIds) {

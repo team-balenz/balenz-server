@@ -1,6 +1,7 @@
 package com.example.Balenz.keyword.controller;
 
 import com.example.Balenz.global.response.BaseResponse;
+import com.example.Balenz.global.security.CustomPrincipal;
 import com.example.Balenz.keyword.dto.HotIssueDataDto;
 import com.example.Balenz.keyword.dto.KeywordDetailDto;
 import com.example.Balenz.keyword.dto.ScopeSectionResponseDto;
@@ -10,6 +11,7 @@ import com.example.Balenz.keyword.service.KeywordDetailService;
 import com.example.Balenz.keyword.service.KeywordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,8 +30,10 @@ public class KeywordController {
     }
 
     @GetMapping("/keyword/{keywordId}")
-    public ResponseEntity<?> getKeywordDetail(@PathVariable Long keywordId) {
-        KeywordDetailDto keywordDetail = keywordDetailService.getKeywordDetail(keywordId);
+    public ResponseEntity<?> getKeywordDetail(@PathVariable Long keywordId,
+                                              @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        Long userId = customPrincipal != null ? customPrincipal.getId() : null;
+        KeywordDetailDto keywordDetail = keywordDetailService.getKeywordDetail(keywordId, userId);
         return ResponseEntity.ok().body(BaseResponse.success(keywordDetail));
     }
 

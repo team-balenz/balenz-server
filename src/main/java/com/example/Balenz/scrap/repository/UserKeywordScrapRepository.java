@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface UserKeywordScrapRepository extends JpaRepository<UserKeywordScrap, Long> {
     Optional<UserKeywordScrap> findByUser_IdAndKeyword_Id(Long userId, Long keywordId);
+    boolean existsByUser_IdAndKeyword_Id(Long userId, Long keywordId);
 }
