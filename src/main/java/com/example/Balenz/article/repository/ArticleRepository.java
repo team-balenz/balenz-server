@@ -2,6 +2,7 @@ package com.example.Balenz.article.repository;
 
 import com.example.Balenz.article.entity.Article;
 import com.example.Balenz.article.entity.FrameType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -39,4 +40,5 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
                                                                           @Param("frameType") String frameType);
     List<Article> findTop8ByKeyword_ServiceDateOrderByValueUserViewCountDesc(LocalDate serviceDate);
     List<Article> findTop8ByKeyword_ServiceDateOrderByNormUserViewCountDesc(LocalDate serviceDate);
+    List<Article> findByKeyword_ServiceDateAndFrameTypeIn(LocalDate serviceDate, List<FrameType> frameTypes, Pageable pageable);
 }

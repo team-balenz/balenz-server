@@ -1,6 +1,7 @@
 package com.example.Balenz.article.controller;
 
 import com.example.Balenz.article.dto.ArticleDetailDto;
+import com.example.Balenz.article.dto.ArticlesByIdeologyDto;
 import com.example.Balenz.article.dto.ArticlesByIdeologyInterestDto;
 import com.example.Balenz.article.service.ArticleDetailService;
 import com.example.Balenz.article.service.ArticleService;
@@ -34,6 +35,11 @@ public class ArticleController {
     public ResponseEntity<?> getArticlesByIdeologyInterest() {
         ArticlesByIdeologyInterestDto articlesByIdeologyInterest = articleService.getArticlesByIdeologyInterest();
         return ResponseEntity.ok().body(BaseResponse.success(articlesByIdeologyInterest));
+    }
+    @GetMapping("/ideology/article/by-ideology")
+    public ResponseEntity<?> getArticlesByIdeology() {
+        ArticlesByIdeologyDto articlesByIdeology = articleService.getArticlesByIdeology();
+        return ResponseEntity.ok().body(BaseResponse.success(articlesByIdeology));
     }
 
 }
