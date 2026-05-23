@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,9 +47,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String providerId = userInfo.getProviderId();
 
         // 4. 해당 소셜 계정으로 이미 가입되어있는 경우 기존 user 가져오기, 없을 경우 생성
-        User user = socialAccountRepository.findByProviderAndProviderUserId(provider, providerId)
-                .map(SocialAccount::getUser)
-                .orElseGet(() -> createUserWithSocialAccount(provider, providerId, userInfo));
+        User user;
+        try {
+            user = socialAccountRepository.findByProviderAndProviderUserId(provider, providerId)
+                    .map(SocialAccount::getUser)
+                    .orElseGet(() -> createUserWithSocialAccount(provider, providerId, userInfo));
+        } catch (BaseException e) {
+            throw new OAuth2AuthenticationException(
+                    new OAuth2Error(e.getErrorCode().name()),
+                    e);
+        }
 
         return CustomPrincipal
                 .fromOAuth(user.getId(), user.getEmail(), user.getRole(), oAuth2User.getAttributes());
@@ -58,6 +66,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private OAuth2UserInfo getOAuth2UserInfo(String registrationId, Map<String, Object> attributes) {
         return switch (registrationId) {
             case "naver" -> new NaverOAuth2UserInfo(attributes);
+            case "kakao" -> new KakaoOAuth2UserInfo(attributes);
             default ->
                     throw new BaseException(ErrorCode.INVALID_SOCIAL_PROVIDER, "지원하지 않는 소셜 로그인입니다. - " + registrationId);
         };
@@ -81,20 +90,35 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             throw new BaseException(ErrorCode.EMAIL_REQUIRED, provider + "에서 이메일을 제공받지 못했습니다.");
         }
 
-        // 이미 해당 이메일로 가입한 유저가 있는 경우 연결
-        User user = userRepository.findByEmail(email).orElseGet(() ->
-                userRepository.save(
-                        User.builder()
-                                .nickname(name)
-                                .imageUrl(imageUrl)
-                                .email(email)
-                                .role(Role.ROLE_USER).build()));
+        // 이미 해당 이메일로 가입한 유저가 있는 경우 에러
+        if (userRepository.existsByEmail(email)) {
+            socialAccountRepository.findByUser_Email(email)
+                    .ifPresentOrElse(
+                            // 소셜 계정으로 가입했던 경우
+                            socialAccount -> {
+                                Provider socialAccountProvider = socialAccount.getProvider();
+                                throw new BaseException(ErrorCode.SOCIAL_ACCOUNT_ALREADY_EXISTS,
+                                        socialAccountProvider.name());
+                            },
+                            // 일반 계정으로 가입했던 경우
+                            () -> {
+                                throw new BaseException(ErrorCode.LOCAL_ACCOUNT_ALREADY_EXISTS, "이미 일반 계정으로 가입된 이메일입니다. 일반 로그인을 진행해주세요.");
+                            }
+                    );
+        }
+
+        User user = userRepository.save(
+                User.builder()
+                        .nickname(name)
+                        .imageUrl(imageUrl)
+                        .email(email)
+                        .role(Role.ROLE_USER).build());
 
         SocialAccount socialAccount = SocialAccount.builder()
                 .provider(provider)
                 .providerUserId(providerUserId).build();
 
-        user.addSocialAccount(socialAccount);
+        user.linkSocialAccount(socialAccount);
         socialAccountRepository.save(socialAccount);
 
         return user;

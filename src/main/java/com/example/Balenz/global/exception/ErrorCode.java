@@ -18,6 +18,8 @@ public enum ErrorCode {
     // User 관련
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다."),
     EMAIL_REQUIRED(HttpStatus.BAD_REQUEST, "회원가입 시 이메일은 필수입니다."),
+    LOCAL_ACCOUNT_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 일반 계정으로 가입된 이메일입니다. 일반 로그인을 진행해주세요."),
+    SOCIAL_ACCOUNT_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 소셜 계정으로 가입된 이메일입니다. 소셜 로그인을 진행해주세요."),
 
     // 소셜 로그인 관련
     INVALID_SOCIAL_PROVIDER(HttpStatus.BAD_REQUEST, "지원하지 않는 소셜 로그인입니다."),
