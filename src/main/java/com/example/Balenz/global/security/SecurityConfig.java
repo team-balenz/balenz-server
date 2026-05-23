@@ -21,8 +21,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Slf4j
@@ -46,7 +44,7 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                //.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/article/*/scrap", "/api/keyword/*/scrap").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -63,6 +61,18 @@ public class SecurityConfig {
                             Throwable cause = e.getCause();
                             if (cause instanceof BaseException baseException) {
                                 error = baseException.getErrorCode().name();
+
+                                String target = REDIRECT_URI.contains("?") ? REDIRECT_URI + "&" : REDIRECT_URI + "?";
+
+                                String provider = "";
+                                String redirectUrl = target + "error=" + error;
+                                if (error.equals(ErrorCode.SOCIAL_ACCOUNT_ALREADY_EXISTS.name())) {
+                                    provider = baseException.getMessage();  // naver, kakao
+                                    redirectUrl += "&provider=" + provider;
+                                }
+
+                                response.sendRedirect(redirectUrl);
+                                return;
                             }
 
                             String target = REDIRECT_URI.contains("?") ? REDIRECT_URI + "&" : REDIRECT_URI + "?";
