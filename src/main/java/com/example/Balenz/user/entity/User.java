@@ -43,8 +43,8 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    private List<SocialAccount> socialAccounts = new ArrayList<>();
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private SocialAccount socialAccount;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RefreshToken> refreshTokens = new ArrayList<>();
@@ -58,8 +58,8 @@ public class User extends BaseTimeEntity {
         this.imageUrl = imageUrl;
     }
 
-    public void addSocialAccount(SocialAccount socialAccount) {
-        this.socialAccounts.add(socialAccount);
+    public void linkSocialAccount(SocialAccount socialAccount) {
+        this.socialAccount = socialAccount;
         socialAccount.setUser(this);
     }
 
