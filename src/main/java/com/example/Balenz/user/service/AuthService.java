@@ -3,9 +3,7 @@ package com.example.Balenz.user.service;
 import com.example.Balenz.global.exception.BaseException;
 import com.example.Balenz.global.exception.ErrorCode;
 import com.example.Balenz.global.security.CookieUtil;
-import com.example.Balenz.user.dto.LoginDto;
-import com.example.Balenz.user.dto.SignUpDto;
-import com.example.Balenz.user.dto.TokenDto;
+import com.example.Balenz.user.dto.*;
 import com.example.Balenz.user.entity.Role;
 import com.example.Balenz.user.entity.User;
 import com.example.Balenz.user.repository.UserRepository;
@@ -71,6 +69,12 @@ public class AuthService {
     public User getCurrentUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public EmailCheckResponseDto checkEmailDuplicate(EmailCheckRequeestDto emailCheckRequeestDto) {
+        return new EmailCheckResponseDto(
+                !userRepository.existsByEmail(emailCheckRequeestDto.email())
+        );
     }
 
 }
