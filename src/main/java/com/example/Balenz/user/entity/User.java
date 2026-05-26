@@ -28,9 +28,6 @@ public class User extends BaseTimeEntity {
     // 소셜 로그인일 경우 null
     private String password;
 
-    @Column(nullable = false)
-    private String imageUrl;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
@@ -50,12 +47,11 @@ public class User extends BaseTimeEntity {
     private List<RefreshToken> refreshTokens = new ArrayList<>();
 
     @Builder
-    public User(String nickname, String email, String password, Role role, String imageUrl) {
+    public User(String nickname, String email, String password, Role role) {
         this.nickname = nickname;
         this.email = email;
         this.password = password;
         this.role = (role == null) ? Role.ROLE_USER : role;
-        this.imageUrl = imageUrl;
     }
 
     public void linkSocialAccount(SocialAccount socialAccount) {
