@@ -8,6 +8,7 @@ import com.example.Balenz.user.entity.SocialAccount;
 import com.example.Balenz.user.entity.User;
 import com.example.Balenz.user.repository.SocialAccountRepository;
 import com.example.Balenz.user.repository.UserRepository;
+import com.example.Balenz.user.service.NicknameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -18,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Provider로부터 받은 정보를 User로 매핑
@@ -30,6 +30,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final SocialAccountRepository socialAccountRepository;
     private final UserRepository userRepository;
+    private final NicknameService nicknameService;
 
     @Override
     @Transactional
@@ -76,14 +77,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private User createUserWithSocialAccount(Provider provider,
                                             String providerUserId,
                                             OAuth2UserInfo userInfo) {
-        // name이 null이면 랜덤 생성
-        String rawName = userInfo.getName();
-        String name = (rawName == null || rawName.isBlank()) ? generateTempName() : rawName;
-
-        // TODO : S3에 디폴트 이미지 등록 후 url 수정
-        // imageUrl이 null이면 디폴트 이미지 등록
-        String rawImageUrl = userInfo.getImageUrl();
-        String imageUrl = (rawImageUrl == null || rawImageUrl.isBlank()) ? "default.png" : rawImageUrl;
+        String name = nicknameService.generateRandomNickname();
 
         String email = userInfo.getEmail();
         if (email == null || email.isBlank()) {
@@ -110,7 +104,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         User user = userRepository.save(
                 User.builder()
                         .nickname(name)
-                        .imageUrl(imageUrl)
                         .email(email)
                         .role(Role.ROLE_USER).build());
 
@@ -122,11 +115,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         socialAccountRepository.save(socialAccount);
 
         return user;
-    }
-
-    /** provider로부터 nickname이나 name을 제공받지 않은 경우 임시 닉네임 생성 */
-    private String generateTempName() {
-        return "사용자_" + UUID.randomUUID().toString().substring(0, 8);
     }
 
 }

@@ -3,9 +3,7 @@ package com.example.Balenz.user.service;
 import com.example.Balenz.global.exception.BaseException;
 import com.example.Balenz.global.exception.ErrorCode;
 import com.example.Balenz.global.security.CookieUtil;
-import com.example.Balenz.user.dto.LoginDto;
-import com.example.Balenz.user.dto.SignUpDto;
-import com.example.Balenz.user.dto.TokenDto;
+import com.example.Balenz.user.dto.*;
 import com.example.Balenz.user.entity.Role;
 import com.example.Balenz.user.entity.User;
 import com.example.Balenz.user.repository.UserRepository;
@@ -23,6 +21,8 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final CookieUtil cookieUtil;
+    private final NicknameService nicknameService;
+
 
     @Transactional
     public void signUp(HttpServletResponse response, SignUpDto signUpDto) {
@@ -40,12 +40,10 @@ public class AuthService {
 
         String encodedPassword = passwordEncoder.encode(password1);
 
-        // TODO : S3에 디폴트 이미지 등록 후 url 수정
         User user = userRepository.save(User.builder()
-                .nickname(signUpDto.getNickname())
+                .nickname(nicknameService.generateRandomNickname())
                 .email(email)
                 .password(encodedPassword)
-                .imageUrl("default.png")
                 .role(Role.ROLE_USER).build());
 
         TokenDto tokens = tokenService.createAndSaveToken(user.getId());
@@ -71,6 +69,12 @@ public class AuthService {
     public User getCurrentUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public EmailCheckResponseDto checkEmailDuplicate(EmailCheckRequeestDto emailCheckRequeestDto) {
+        return new EmailCheckResponseDto(
+                !userRepository.existsByEmail(emailCheckRequeestDto.email())
+        );
     }
 
 }

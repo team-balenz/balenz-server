@@ -1,6 +1,8 @@
 package com.example.Balenz.user.controller;
 
 import com.example.Balenz.global.response.BaseResponse;
+import com.example.Balenz.user.dto.EmailCheckRequeestDto;
+import com.example.Balenz.user.dto.EmailCheckResponseDto;
 import com.example.Balenz.user.dto.LoginDto;
 import com.example.Balenz.user.dto.SignUpDto;
 import com.example.Balenz.user.service.AuthService;
@@ -41,6 +43,13 @@ public class AuthController {
         tokenService.reissue(response, refreshToken);
         return ResponseEntity.ok()
                 .body(BaseResponse.success(null));
+    }
+
+    @PostMapping("/check-email")
+    public ResponseEntity<?> checkEmailDuplicate(@Valid @RequestBody EmailCheckRequeestDto emailCheckRequeestDto) {
+        EmailCheckResponseDto emailCheckResponseDto = authService.checkEmailDuplicate(emailCheckRequeestDto);
+        return ResponseEntity.ok()
+                .body(BaseResponse.success(emailCheckResponseDto));
     }
 
 }

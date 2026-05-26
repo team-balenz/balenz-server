@@ -14,6 +14,7 @@ public enum ErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "로그인에 실패했습니다."),
     TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND,  "토큰을 찾을 수 없습니다."),
+    NICKNAME_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "랜덤 닉네임 생성에 실패했습니다. 다시 시도해주세요."),
 
     // User 관련
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다."),
