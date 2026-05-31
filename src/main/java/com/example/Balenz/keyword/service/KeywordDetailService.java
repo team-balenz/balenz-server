@@ -8,6 +8,7 @@ import com.example.Balenz.article.service.ArticleDetailService;
 import com.example.Balenz.global.exception.BaseException;
 import com.example.Balenz.global.exception.ErrorCode;
 import com.example.Balenz.keyword.dto.KeywordDetailDto;
+import com.example.Balenz.keyword.dto.KeywordDto;
 import com.example.Balenz.keyword.dto.ScopeSectionResponseDto;
 import com.example.Balenz.keyword.entity.DominantFrameType;
 import com.example.Balenz.keyword.entity.Keyword;
@@ -47,7 +48,7 @@ public class KeywordDetailService {
         int bias = keywordService.getBias(dominantFrameType, articleCount);
 
         // 인기 scope 조회
-        List<ScopeSectionResponseDto.KeywordDto> hotKeywords = keywordService.getHotKeywordDtos();
+        List<KeywordDto> hotKeywords = keywordService.getHotKeywordDtos();
 
         // 프레임 타입별 메인 기사 (조회수가 가장 높은 기사) 조회
         KeywordDetailDto.MainArticlesDto mainArticles = getMainArticleDtos(keywordId);

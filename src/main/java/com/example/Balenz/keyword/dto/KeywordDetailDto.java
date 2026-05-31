@@ -40,7 +40,7 @@ public class KeywordDetailDto {
 
     private RelatedArticlesDto relatedArticles;
 
-    private List<ScopeSectionResponseDto.KeywordDto> hotKeywords;
+    private List<KeywordDto> hotKeywords;
 
     private boolean scraped;
 

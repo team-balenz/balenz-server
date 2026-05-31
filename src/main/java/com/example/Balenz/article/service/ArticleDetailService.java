@@ -7,7 +7,7 @@ import com.example.Balenz.article.entity.FrameType;
 import com.example.Balenz.article.repository.ArticleRepository;
 import com.example.Balenz.global.exception.BaseException;
 import com.example.Balenz.global.exception.ErrorCode;
-import com.example.Balenz.keyword.dto.ScopeSectionResponseDto;
+import com.example.Balenz.keyword.dto.KeywordDto;
 import com.example.Balenz.keyword.entity.Keyword;
 import com.example.Balenz.keyword.service.KeywordService;
 import com.example.Balenz.scrap.repository.UserArticleScrapRepository;
@@ -73,7 +73,7 @@ public class ArticleDetailService {
         RelatedArticlesDto relatedArticlesDto = getRelatedArticlesDto(keyword.getId(), excludeArticleIds);
 
         // 인기 scope 조회
-        List<ScopeSectionResponseDto.KeywordDto> hotKeywords = keywordService.getHotKeywordDtos();
+        List<KeywordDto> hotKeywords = keywordService.getHotKeywordDtos();
 
         return ArticleDetailDto.builder()
                 .id(article.getId())

@@ -3,6 +3,7 @@ package com.example.Balenz.keyword.service;
 import com.example.Balenz.article.entity.Article;
 import com.example.Balenz.article.entity.FrameType;
 import com.example.Balenz.article.repository.ArticleRepository;
+import com.example.Balenz.keyword.dto.KeywordDto;
 import com.example.Balenz.keyword.dto.ScopeSectionResponseDto;
 import com.example.Balenz.keyword.entity.Category;
 import com.example.Balenz.keyword.entity.DominantFrameType;
@@ -59,7 +60,7 @@ public class KeywordService {
 
         // 2-2. KeywordDto 리스트
         List<Keyword> subKeywords = keywords.stream().skip(1).toList();
-        List<ScopeSectionResponseDto.KeywordDto> keywordDtos = getKeywordDtos(subKeywords);
+        List<KeywordDto> keywordDtos = getKeywordDtos(subKeywords);
 
 
         return ScopeSectionResponseDto.builder()
@@ -68,12 +69,12 @@ public class KeywordService {
     }
 
     /** Keyword 리스트 -> KeywordDto 리스트 */
-    public List<ScopeSectionResponseDto.KeywordDto> getKeywordDtos(List<Keyword> keywords) {
+    public List<KeywordDto> getKeywordDtos(List<Keyword> keywords) {
         return keywords.stream()
                 .map(k -> {
                     ScopeSectionResponseDto.ArticleCountDto countDto = getArticleCount(k.getId());
 
-                    return ScopeSectionResponseDto.KeywordDto.builder()
+                    return KeywordDto.builder()
                             .id(k.getId())
                             .name(k.getName())
                             .imageUrl(k.getThumbnailUrl())
@@ -141,10 +142,10 @@ public class KeywordService {
     }
 
 
-    public List<ScopeSectionResponseDto.KeywordDto> getHotKeywordDtos() {
+    public List<KeywordDto> getHotKeywordDtos() {
         LocalDate serviceDate = getCurrentServiceDate();
         List<Keyword> keywords = keywordRepository.findTop6ByServiceDateOrderByViewCountDescIdDesc(serviceDate);
-        List<ScopeSectionResponseDto.KeywordDto> hotKeywords;
+        List<KeywordDto> hotKeywords;
         if (keywords.isEmpty()) {
             hotKeywords = List.of();
         } else {

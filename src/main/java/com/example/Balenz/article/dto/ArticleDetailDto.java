@@ -1,7 +1,7 @@
 package com.example.Balenz.article.dto;
 
 import com.example.Balenz.article.entity.FrameType;
-import com.example.Balenz.keyword.dto.ScopeSectionResponseDto;
+import com.example.Balenz.keyword.dto.KeywordDto;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Builder;
 import lombok.Data;
@@ -38,7 +38,7 @@ public class ArticleDetailDto {
 
     private RelatedArticlesDto relatedArticles;
 
-    private List<ScopeSectionResponseDto.KeywordDto> hotKeywords;
+    private List<KeywordDto> hotKeywords;
 
     private boolean scraped;
 
