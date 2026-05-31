@@ -72,7 +72,7 @@ public class ArticleService {
                 .map(this::toSimpleArticleDtoWithoutImage).toList();
     }
 
-    private SimpleArticleWithoutImageDto toSimpleArticleDtoWithoutImage(Article article) {
+    public SimpleArticleWithoutImageDto toSimpleArticleDtoWithoutImage(Article article) {
         return SimpleArticleWithoutImageDto.builder()
                 .id(article.getId())
                 .title(article.getTitle())
