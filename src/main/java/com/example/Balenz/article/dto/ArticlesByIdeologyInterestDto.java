@@ -9,8 +9,8 @@ import java.util.List;
 @Builder
 public class ArticlesByIdeologyInterestDto {
 
-    private List<SimpleArticleDto> valueInterestArticles;
+    private List<SimpleArticleWithoutImageDto> valueInterestArticles;
 
-    private List<SimpleArticleDto> normInterestArticles;
+    private List<SimpleArticleWithoutImageDto> normInterestArticles;
 
 }
