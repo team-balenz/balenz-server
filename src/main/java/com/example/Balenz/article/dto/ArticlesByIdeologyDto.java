@@ -9,10 +9,10 @@ import java.util.List;
 @Builder
 public class ArticlesByIdeologyDto {
 
-    private List<SimpleArticleDto> value;
+    private List<SimpleArticleWithoutImageDto> value;
 
-    private List<SimpleArticleDto> neutral;
+    private List<SimpleArticleWithoutImageDto> neutral;
 
-    private List<SimpleArticleDto> norm;
+    private List<SimpleArticleWithoutImageDto> norm;
 
 }

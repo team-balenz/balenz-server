@@ -41,4 +41,5 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     List<Article> findTop8ByKeyword_ServiceDateOrderByValueUserViewCountDesc(LocalDate serviceDate);
     List<Article> findTop8ByKeyword_ServiceDateOrderByNormUserViewCountDesc(LocalDate serviceDate);
     List<Article> findByKeyword_ServiceDateAndFrameTypeIn(LocalDate serviceDate, List<FrameType> frameTypes, Pageable pageable);
+    List<Article> findByTitleContaining(String query);
 }

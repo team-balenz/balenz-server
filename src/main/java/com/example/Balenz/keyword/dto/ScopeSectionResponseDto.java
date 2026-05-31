@@ -36,23 +36,6 @@ public class ScopeSectionResponseDto {
 
     @Data
     @Builder
-    public static class KeywordDto {
-
-        private Long id;
-
-        private String name;
-
-        private String imageUrl;
-
-        private ArticleCountDto articleCount;
-
-        // 어떤 관점의 기사가 많은지
-        private DominantFrameType dominantFrameType;
-
-    }
-
-    @Data
-    @Builder
     public static class ArticleCountDto {
 
         private Long value;

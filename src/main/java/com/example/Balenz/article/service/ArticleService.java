@@ -2,7 +2,7 @@ package com.example.Balenz.article.service;
 
 import com.example.Balenz.article.dto.ArticlesByIdeologyDto;
 import com.example.Balenz.article.dto.ArticlesByIdeologyInterestDto;
-import com.example.Balenz.article.dto.SimpleArticleDto;
+import com.example.Balenz.article.dto.SimpleArticleWithoutImageDto;
 import com.example.Balenz.article.entity.Article;
 import com.example.Balenz.article.entity.FrameType;
 import com.example.Balenz.article.repository.ArticleRepository;
@@ -31,10 +31,10 @@ public class ArticleService {
         List<Article> top8ValueUserViewCountArticles = articleRepository.findTop8ByKeyword_ServiceDateOrderByValueUserViewCountDesc(serviceDate);
         List<Article> top8NormUserViewCountArticles = articleRepository.findTop8ByKeyword_ServiceDateOrderByNormUserViewCountDesc(serviceDate);
 
-        List<SimpleArticleDto> valueInterestArticles = top8ValueUserViewCountArticles.stream()
+        List<SimpleArticleWithoutImageDto> valueInterestArticles = top8ValueUserViewCountArticles.stream()
                 .map(this::toSimpleArticleDtoWithoutImage)
                 .toList();
-        List<SimpleArticleDto> normInterestArticles = top8NormUserViewCountArticles.stream()
+        List<SimpleArticleWithoutImageDto> normInterestArticles = top8NormUserViewCountArticles.stream()
                 .map(this::toSimpleArticleDtoWithoutImage)
                 .toList();
 
@@ -52,7 +52,7 @@ public class ArticleService {
         List<Article> normArticleCandidates = articleRepository.findByKeyword_ServiceDateAndFrameTypeIn(serviceDate,
                 List.of(FrameType.STRONG_NORM, FrameType.NORM),
                 PageRequest.of(0, CANDIDATE_LIMIT));
-        List<SimpleArticleDto> neutralArticles = articleRepository.findByKeyword_ServiceDateAndFrameTypeIn(serviceDate,
+        List<SimpleArticleWithoutImageDto> neutralArticles = articleRepository.findByKeyword_ServiceDateAndFrameTypeIn(serviceDate,
                         List.of(FrameType.NEUTRAL),
                         PageRequest.of(0, ARTICLE_LIMIT))
                 .stream()
@@ -64,7 +64,7 @@ public class ArticleService {
                 .norm(getRandomArticlesFromCandidates(normArticleCandidates)).build();
     }
 
-    private List<SimpleArticleDto> getRandomArticlesFromCandidates(List<Article> articleCandidates) {
+    private List<SimpleArticleWithoutImageDto> getRandomArticlesFromCandidates(List<Article> articleCandidates) {
         List<Article> shuffledArticles = new ArrayList<>(articleCandidates);
         Collections.shuffle(shuffledArticles);
         return shuffledArticles.stream()
@@ -72,13 +72,12 @@ public class ArticleService {
                 .map(this::toSimpleArticleDtoWithoutImage).toList();
     }
 
-    private SimpleArticleDto toSimpleArticleDtoWithoutImage(Article article) {
-        return SimpleArticleDto.builder()
+    public SimpleArticleWithoutImageDto toSimpleArticleDtoWithoutImage(Article article) {
+        return SimpleArticleWithoutImageDto.builder()
                 .id(article.getId())
                 .title(article.getTitle())
                 .newsAgencyName(article.getNewsAgency().getName())
-                .frameType(article.getFrameType())
-                .imageUrl(null).build();
+                .frameType(article.getFrameType()).build();
     }
 
 }
