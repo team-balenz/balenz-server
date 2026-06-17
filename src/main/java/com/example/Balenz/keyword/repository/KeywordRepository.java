@@ -11,9 +11,9 @@ import java.util.Optional;
 
 @Repository
 public interface KeywordRepository extends JpaRepository<Keyword, Long> {
-    List<Keyword> findTop7ByCategoryAndServiceDateOrderByViewCountDescIdDesc(Category category, LocalDate serviceDate);
-    List<Keyword> findTop7ByServiceDateOrderByViewCountDescIdDesc(LocalDate serviceDate);
+    List<Keyword> findTop6ByCategoryAndServiceDateOrderByViewCountDescIdDesc(Category category, LocalDate serviceDate);
     Optional<Keyword> findByNameAndCategoryAndServiceDate(String name, Category category, LocalDate serviceDate);
     List<Keyword> findTop6ByServiceDateOrderByViewCountDescIdDesc(LocalDate serviceDate);
     List<Keyword> findByNameContaining(String query);
+    Optional<Keyword> findTopByCategoryAndServiceDateOrderByViewCountDescIdDesc(Category category, LocalDate serviceDate);
 }

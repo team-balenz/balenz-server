@@ -10,13 +10,15 @@ import java.util.List;
 @Builder
 public class ScopeSectionResponseDto {
 
-    private MainKeywordDto mainKeyword;
+    private List<MainKeywordDto> mainKeywords;
 
     private List<KeywordDto> keywords;
 
     @Data
     @Builder
     public static class MainKeywordDto {
+
+        private String category;
 
         private Long id;
 

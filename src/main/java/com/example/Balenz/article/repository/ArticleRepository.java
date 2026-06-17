@@ -14,7 +14,8 @@ import java.util.Optional;
 
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Long> {
-    long countByKeywordIdAndFrameType(Long keywordId, FrameType frameType);
+    long countByKeywordIdAndFrameTypeIn(Long keywordId, List<FrameType> frameTypes);
+
     // 키워드 내 각 프레임타입별로 각각 가장 조회수가 높은 기사 조회
     @Query(value = """
         SELECT *
@@ -27,6 +28,20 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     Optional<Article> findTopByKeyword_IdAndFrameTypeOrderByViewCountDesc(@Param("keywordId") Long keywordId,
                                                      @Param("frameType") String frameType);
 
+    // STRONG + 일반 이념 프레임타입 합쳐서 각각 가장 조회수가 높은 기사 조회
+    @Query(value = """
+    SELECT *
+    FROM Article
+    WHERE keyword_id = :keywordId
+      AND frame_type IN (:frameTypes)
+    ORDER BY (value_user_view_count + neutral_user_view_count + norm_user_view_count) DESC, id ASC
+    LIMIT 1
+""", nativeQuery = true)
+    Optional<Article> findTopByKeywordIdAndFrameTypeInOrderByViewCountDesc(
+            @Param("keywordId") Long keywordId,
+            @Param("frameTypes") List<String> frameTypes
+    );
+
     List<Article> findTop4ByKeyword_IdAndFrameTypeOrderByPublishedAtDesc(Long keywordId, FrameType frameType);
     @Query(value = """
         SELECT *
@@ -38,6 +53,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     """, nativeQuery = true)
     List<Article> findTop2ByKeyword_IdAndFrameTypeOrderByViewCountDesc(@Param("keywordId") Long keywordId,
                                                                           @Param("frameType") String frameType);
+
     List<Article> findTop8ByKeyword_ServiceDateOrderByValueUserViewCountDesc(LocalDate serviceDate);
     List<Article> findTop8ByKeyword_ServiceDateOrderByNormUserViewCountDesc(LocalDate serviceDate);
     List<Article> findByKeyword_ServiceDateAndFrameTypeIn(LocalDate serviceDate, List<FrameType> frameTypes, Pageable pageable);
