@@ -14,9 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -33,39 +31,47 @@ public class KeywordService {
 
         List<Keyword> keywords;
         if (category == null) { // 전체 조회
-            keywords = keywordRepository.findTop7ByServiceDateOrderByViewCountDescIdDesc(serviceDate);
+            keywords = keywordRepository.findTop6ByServiceDateOrderByViewCountDescIdDesc(serviceDate);
         } else {
-            keywords = keywordRepository.findTop7ByCategoryAndServiceDateOrderByViewCountDescIdDesc(category, serviceDate);
+            keywords = keywordRepository.findTop6ByCategoryAndServiceDateOrderByViewCountDescIdDesc(category, serviceDate);
         }
 
         // 2. DTO 생성
-        // 2-1. MainKeywordDto
-        if (keywords.isEmpty()) {
-            return ScopeSectionResponseDto.builder()
-                    .mainKeyword(null)
-                    .keywords(List.of()).build();
-        }
-        Keyword main = keywords.get(0);
+        // 2-1. MainKeywordDto 리스트
+        List<ScopeSectionResponseDto.MainKeywordDto> mainKeywordDtos = getMainKeywordDtos(serviceDate);
 
-        Optional<Article> valueArticle = articleRepository.findTopByKeyword_IdAndFrameTypeOrderByViewCountDesc(main.getId(), FrameType.VALUE.name());
-        Optional<Article> normArticle = articleRepository.findTopByKeyword_IdAndFrameTypeOrderByViewCountDesc(main.getId(), FrameType.NORM.name());
-        ScopeSectionResponseDto.MainKeywordDto mainKeywordDto = ScopeSectionResponseDto.MainKeywordDto.builder()
-                .id(main.getId())
-                .name(main.getName())
-                .articleCount(getArticleCount(main.getId()))
-                .valueArticleTitle(valueArticle.isPresent() ? valueArticle.get().getTitle() : null)
-                .valueImageUrl(valueArticle.isPresent() ? valueArticle.get().getImageUrl() : null)
-                .normArticleTitle(normArticle.isPresent() ? normArticle.get().getTitle() : null)
-                .normImageUrl(normArticle.isPresent() ? normArticle.get().getImageUrl() : null).build();
-
-        // 2-2. KeywordDto 리스트
-        List<Keyword> subKeywords = keywords.stream().skip(1).toList();
-        List<KeywordDto> keywordDtos = getKeywordDtos(subKeywords);
-
-
+        // 2-2. 카테고리별 KeywordDto 리스트
+        List<KeywordDto> keywordDtos = keywords.isEmpty() ? List.of() : getKeywordDtos(keywords);
+        
         return ScopeSectionResponseDto.builder()
-                .mainKeyword(mainKeywordDto)
+                .mainKeywords(mainKeywordDtos)
                 .keywords(keywordDtos).build();
+    }
+
+    /** mainKeywords 조회 */
+    private List<ScopeSectionResponseDto.MainKeywordDto> getMainKeywordDtos(LocalDate serviceDate) {
+        List<Category> categories = Arrays.asList(Category.values());
+        List<ScopeSectionResponseDto.MainKeywordDto> mainKeywords = new ArrayList<>();
+
+        for (Category category : categories) {
+            Keyword mainKeyword = keywordRepository.findTopByCategoryAndServiceDateOrderByViewCountDescIdDesc(category, serviceDate).orElse(null);
+            if (mainKeyword != null) {
+                Article valueArticle = articleRepository.findTopByKeywordIdAndFrameTypeInOrderByViewCountDesc(mainKeyword.getId(), List.of(FrameType.VALUE.name(), FrameType.STRONG_VALUE.name())).orElse(null);
+                Article normArticle = articleRepository.findTopByKeywordIdAndFrameTypeInOrderByViewCountDesc(mainKeyword.getId(), List.of(FrameType.NORM.name(), FrameType.STRONG_NORM.name())).orElse(null);
+
+                mainKeywords.add(ScopeSectionResponseDto.MainKeywordDto.builder()
+                        .category(category.name())
+                        .id(mainKeyword.getId())
+                        .name(mainKeyword.getName())
+                        .articleCount(getArticleCount(mainKeyword.getId()))
+                        .valueArticleTitle(valueArticle != null ? valueArticle.getTitle() : null)
+                        .valueImageUrl(valueArticle != null ? valueArticle.getImageUrl() : null)
+                        .normArticleTitle(normArticle != null ? normArticle.getTitle() : null)
+                        .normImageUrl(normArticle != null ? normArticle.getImageUrl() : null).build());
+            }
+        }
+
+        return mainKeywords;
     }
 
     /** Keyword 리스트 -> KeywordDto 리스트 */
@@ -85,9 +91,9 @@ public class KeywordService {
 
     /** 키워드에 해당하는 프레임별 기사 수 */
     public ScopeSectionResponseDto.ArticleCountDto getArticleCount(Long keywordId) {
-        long valueCount = articleRepository.countByKeywordIdAndFrameType(keywordId, FrameType.VALUE);
-        long neutralCount = articleRepository.countByKeywordIdAndFrameType(keywordId, FrameType.NEUTRAL);
-        long normCount = articleRepository.countByKeywordIdAndFrameType(keywordId, FrameType.NORM);
+        long valueCount = articleRepository.countByKeywordIdAndFrameTypeIn(keywordId, List.of(FrameType.VALUE, FrameType.STRONG_VALUE));
+        long neutralCount = articleRepository.countByKeywordIdAndFrameTypeIn(keywordId, List.of(FrameType.NEUTRAL));
+        long normCount = articleRepository.countByKeywordIdAndFrameTypeIn(keywordId, List.of(FrameType.NORM, FrameType.STRONG_NORM));
         long total = valueCount + neutralCount + normCount;
 
         return ScopeSectionResponseDto.ArticleCountDto.builder()

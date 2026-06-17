@@ -5,5 +5,6 @@ public enum FrameType {
     VALUE,
     NEUTRAL,
     NORM,
-    STRONG_NORM
+    STRONG_NORM,
+    UNKNOWN
 }

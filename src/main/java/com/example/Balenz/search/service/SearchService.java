@@ -24,8 +24,8 @@ public class SearchService {
     private final ArticleService articleService;
 
     public SearchResponseDto search(String query) {
-        List<Keyword> keywords = keywordRepository.findByNameContaining(query);
-        List<Article> articles = articleRepository.findByTitleContaining(query);
+        List<Keyword> keywords = keywordRepository.searchByName(query);
+        List<Article> articles = articleRepository.searchByTitle(query);
 
         return new SearchResponseDto(
                 keywordService.getKeywordDtos(keywords),
