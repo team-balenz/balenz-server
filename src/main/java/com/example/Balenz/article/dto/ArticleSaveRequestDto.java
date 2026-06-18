@@ -13,6 +13,9 @@ public class ArticleSaveRequestDto {
     private String title;
 
     @NotBlank
+    private String content;
+
+    @NotBlank
     private String articleUrl;
 
     private String imageUrl;
