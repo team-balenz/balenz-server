@@ -29,14 +29,6 @@ public class Article extends BaseTimeEntity {
 
     private String summary;
 
-    // 가치 프레임 점수
-    @Column(nullable = false)
-    private Double valueScore;
-
-    // 규범 프레임 점수
-    @Column(nullable = false)
-    private Double normScore;
-
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private FrameType frameType;
@@ -78,14 +70,12 @@ public class Article extends BaseTimeEntity {
 
     @Builder
     public Article(String title, String articleUrl, String imageUrl, String summary,
-                   Double valueScore, Double normScore, FrameType frameType,
+                   FrameType frameType,
                    LocalDate publishedAt, NewsAgency newsAgency, Keyword keyword) {
         this.title = title;
         this.articleUrl = articleUrl;
         this.imageUrl = imageUrl;
         this.summary = summary;
-        this.valueScore = valueScore;
-        this.normScore = normScore;
         this.frameType = frameType;
         this.publishedAt = publishedAt;
         this.newsAgency = newsAgency;
@@ -106,6 +96,10 @@ public class Article extends BaseTimeEntity {
 
     public void increaseNormUserViewCount() {
         this.normUserViewCount++;
+    }
+
+    public void updateFrameType(FrameType frameType) {
+        this.frameType = frameType;
     }
 
 }

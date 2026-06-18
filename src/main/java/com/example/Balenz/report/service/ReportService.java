@@ -1,6 +1,7 @@
 package com.example.Balenz.report.service;
 
 import com.example.Balenz.article.repository.ArticleRepository;
+import com.example.Balenz.global.email.EmailService;
 import com.example.Balenz.global.exception.BaseException;
 import com.example.Balenz.global.exception.ErrorCode;
 import com.example.Balenz.keyword.repository.KeywordRepository;
@@ -13,8 +14,6 @@ import com.example.Balenz.user.entity.User;
 import com.example.Balenz.user.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +26,7 @@ public class ReportService {
     private final KeywordRepository keywordRepository;
     private final ReportRepository reportRepository;
     private final AuthService authService;
-    private final JavaMailSender mailSender;
+    private final EmailService emailService;
 
     @Transactional
     public void submitReport(ReportSubmitRequestDto requestDto, Long userId) {
@@ -65,8 +64,8 @@ public class ReportService {
 
         // DB에 저장 후 이메일 전송
         try {
-            sendReportEmail(
-                    "[Balenz] 문제 제보가 접수되었습니다. #" + report.getId(),
+            emailService.sendEmail(
+                    "[문제 제보] 문제 제보가 접수되었습니다. #" + report.getId(),
                     """
                     - 제보 ID: %d
                     
@@ -88,17 +87,6 @@ public class ReportService {
         } catch (Exception e) {
             log.error("문제 제보 이메일 전송 실패 - reportId={}", report.getId(), e);
         }
-    }
-
-    /** 이메일 전송 */
-    private void sendReportEmail(String subject, String content) {
-        SimpleMailMessage message = new SimpleMailMessage();
-
-        message.setTo("team.balenz@gmail.com");
-        message.setSubject(subject);
-        message.setText(content);
-
-        mailSender.send(message);
     }
 
 }

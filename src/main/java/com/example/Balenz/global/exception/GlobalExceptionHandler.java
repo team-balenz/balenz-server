@@ -3,6 +3,7 @@ package com.example.Balenz.global.exception;
 import com.example.Balenz.global.response.BaseResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -60,6 +61,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(ErrorCode.INVALID_INPUT_VALUE.getStatus())
                 .body(BaseResponse.error(ErrorCode.INVALID_INPUT_VALUE, "잘못된 쿼리 파라미터입니다."));
+    }
+
+    // 요청 본문 파싱에 실패한 경우 (Enum 값이 잘못된 경우 등)
+    @ExceptionHandler(HttpMessageNotReadableException .class)
+    public ResponseEntity<BaseResponse<?>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        log.error("HttpMessageNotReadableException - " + e.getMessage());
+
+        return ResponseEntity
+                .status(ErrorCode.INVALID_INPUT_VALUE.getStatus())
+                .body(BaseResponse.error(ErrorCode.INVALID_INPUT_VALUE, "잘못된 요청 본문입니다."));
     }
 
     // 쿼리 파라미터 누락된 경우
