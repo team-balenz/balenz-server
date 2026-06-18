@@ -1,6 +1,7 @@
 package com.example.Balenz.article.controller;
 
 import com.example.Balenz.article.dto.ArticleSaveRequestDto;
+import com.example.Balenz.article.dto.FrameTypeUpdateRequestDto;
 import com.example.Balenz.article.service.AdminArticleService;
 import com.example.Balenz.global.response.BaseResponse;
 import jakarta.validation.Valid;
@@ -21,6 +22,13 @@ public class AdminArticleController {
     @PostMapping
     public ResponseEntity<?> saveArticle(@Valid @RequestBody ArticleSaveRequestDto articleSaveRequestDto) {
         adminArticleService.saveArticle(articleSaveRequestDto);
+        return ResponseEntity.ok()
+                .body(BaseResponse.success(null));
+    }
+
+    @PostMapping("/frame-type")
+    public ResponseEntity<?> updateArticleFrameType(@Valid @RequestBody FrameTypeUpdateRequestDto frameTypeUpdateRequestDto) {
+        adminArticleService.updateArticleFrameType(frameTypeUpdateRequestDto);
         return ResponseEntity.ok()
                 .body(BaseResponse.success(null));
     }
