@@ -27,6 +27,7 @@ public class Article extends BaseTimeEntity {
 
     private String imageUrl;
 
+    @Column(columnDefinition = "TEXT")
     private String summary;
 
     @Column(nullable = false)
