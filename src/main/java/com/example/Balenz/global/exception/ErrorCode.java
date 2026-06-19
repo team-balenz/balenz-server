@@ -33,6 +33,9 @@ public enum ErrorCode {
     KEYWORD_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 키워드를 찾을 수 없습니다."),
     KEYWORD_SCRAP_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 해당 키워드 스크랩이 존재합니다."),
 
+    // 외부 API 관련
+    EXTERNAL_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "외부 API에서 오류가 발생했습니다."),
+
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다.");
 
