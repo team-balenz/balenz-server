@@ -8,6 +8,7 @@ import com.example.Balenz.keyword.dto.HotIssueDataDto;
 import com.example.Balenz.keyword.entity.Keyword;
 import com.example.Balenz.keyword.repository.KeywordRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -41,11 +42,12 @@ public class HotKeywordService {
 
         // 2. 각 키워드에서 인기있는 기사 2개 조회
         for (Keyword keyword : keywords) {
-            List<Article> strongValue = articleRepository.findTop2ByKeyword_IdAndFrameTypeOrderByViewCountDesc(keyword.getId(), FrameType.STRONG_VALUE.name());
-            List<Article> value = articleRepository.findTop2ByKeyword_IdAndFrameTypeOrderByViewCountDesc(keyword.getId(), FrameType.VALUE.name());
-            List<Article> neutral = articleRepository.findTop2ByKeyword_IdAndFrameTypeOrderByViewCountDesc(keyword.getId(), FrameType.NEUTRAL.name());
-            List<Article> norm = articleRepository.findTop2ByKeyword_IdAndFrameTypeOrderByViewCountDesc(keyword.getId(), FrameType.NORM.name());
-            List<Article> strongNorm = articleRepository.findTop2ByKeyword_IdAndFrameTypeOrderByViewCountDesc(keyword.getId(), FrameType.STRONG_NORM.name());
+            Long keywordId = keyword.getId();
+            List<Article> strongValue = getTop2MainArticleByKeywordAndFrameType(keywordId, FrameType.STRONG_VALUE);
+            List<Article> value = getTop2MainArticleByKeywordAndFrameType(keywordId, FrameType.VALUE);
+            List<Article> neutral = getTop2MainArticleByKeywordAndFrameType(keywordId, FrameType.NEUTRAL);
+            List<Article> norm = getTop2MainArticleByKeywordAndFrameType(keywordId, FrameType.NORM);
+            List<Article> strongNorm = getTop2MainArticleByKeywordAndFrameType(keywordId, FrameType.STRONG_NORM);
 
             // 각 프레임타입별로 기사 2개씩 조회 후 그 중 랜덤으로 2개 반환
             List<Article> valueCandidates = Stream.concat(strongValue.stream(), value.stream()).toList();
@@ -68,7 +70,7 @@ public class HotKeywordService {
                     .map(this::toSimpleArticleDto).toList();
 
             HotIssueDataDto.KeywordAndArticleDto keywordAndArticle = HotIssueDataDto.KeywordAndArticleDto.builder()
-                    .id(keyword.getId())
+                    .id(keywordId)
                     .name(keyword.getName())
                     .articles(articles).build();
 
@@ -77,6 +79,13 @@ public class HotKeywordService {
 
         return HotIssueDataDto.builder()
                 .keywordAndArticles(keywordAndArticles).build();
+    }
+
+    private List<Article> getTop2MainArticleByKeywordAndFrameType(Long keywordId, FrameType frameType) {
+        return articleRepository.findByKeyword_IdAndFrameTypeOrderByViewCountDesc(
+                keywordId,
+                frameType,
+                PageRequest.of(0, 2));
     }
 
     private SimpleArticleDto toSimpleArticleDto(Article article) {

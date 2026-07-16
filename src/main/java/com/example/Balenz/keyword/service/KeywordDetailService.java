@@ -15,6 +15,7 @@ import com.example.Balenz.keyword.entity.Keyword;
 import com.example.Balenz.keyword.repository.KeywordRepository;
 import com.example.Balenz.scrap.repository.UserKeywordScrapRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,11 +89,11 @@ public class KeywordDetailService {
 
     /** 프레임 타입별로 메인 기사 반환 */
     private KeywordDetailDto.MainArticlesDto getMainArticleDtos(Long id) {
-        Article mainStrongValueArticle = articleRepository.findTopByKeyword_IdAndFrameTypeOrderByViewCountDesc(id, FrameType.STRONG_VALUE.name()).orElse(null);
-        Article mainValueArticle = articleRepository.findTopByKeyword_IdAndFrameTypeOrderByViewCountDesc(id, FrameType.VALUE.name()).orElse(null);
-        Article mainNeutralArticle = articleRepository.findTopByKeyword_IdAndFrameTypeOrderByViewCountDesc(id, FrameType.NEUTRAL.name()).orElse(null);
-        Article mainNormArticle = articleRepository.findTopByKeyword_IdAndFrameTypeOrderByViewCountDesc(id, FrameType.NORM.name()).orElse(null);
-        Article mainStrongNormArticle = articleRepository.findTopByKeyword_IdAndFrameTypeOrderByViewCountDesc(id, FrameType.STRONG_NORM.name()).orElse(null);
+        Article mainStrongValueArticle = getMainArticleByKeywordAndFrameType(id, FrameType.STRONG_VALUE);
+        Article mainValueArticle = getMainArticleByKeywordAndFrameType(id, FrameType.VALUE);
+        Article mainNeutralArticle = getMainArticleByKeywordAndFrameType(id, FrameType.NEUTRAL);
+        Article mainNormArticle = getMainArticleByKeywordAndFrameType(id, FrameType.NORM);
+        Article mainStrongNormArticle = getMainArticleByKeywordAndFrameType(id, FrameType.STRONG_NORM);
 
         // VALUE 프레임 (STRONG_VALUE / VALUE) 메인 기사
         RelatedArticlesDto.RelatedArticleDto mainValueDto = getMainArticle(mainStrongValueArticle, mainValueArticle);
@@ -110,6 +111,15 @@ public class KeywordDetailService {
                 .value(mainValueDto)
                 .neutral(mainNeutralDto)
                 .norm(mainNormDto).build();
+    }
+
+    private Article getMainArticleByKeywordAndFrameType(Long keywordId, FrameType frameType) {
+        return articleRepository.findByKeyword_IdAndFrameTypeOrderByViewCountDesc(
+                        keywordId,
+                        frameType,
+                        PageRequest.of(0, 1))
+                .stream().findFirst()
+                .orElse(null);
     }
 
     /** 두 개의 기사 중 어떤 게 메인인지 결정 */

@@ -10,6 +10,7 @@ import com.example.Balenz.keyword.entity.DominantFrameType;
 import com.example.Balenz.keyword.entity.Keyword;
 import com.example.Balenz.keyword.repository.KeywordRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -56,14 +57,15 @@ public class KeywordService {
         for (Category category : categories) {
             Keyword mainKeyword = keywordRepository.findTopByCategoryAndServiceDateOrderByViewCountDescIdDesc(category, serviceDate).orElse(null);
             if (mainKeyword != null) {
-                Article valueArticle = articleRepository.findTopByKeywordIdAndFrameTypeInOrderByViewCountDesc(mainKeyword.getId(), List.of(FrameType.VALUE.name(), FrameType.STRONG_VALUE.name())).orElse(null);
-                Article normArticle = articleRepository.findTopByKeywordIdAndFrameTypeInOrderByViewCountDesc(mainKeyword.getId(), List.of(FrameType.NORM.name(), FrameType.STRONG_NORM.name())).orElse(null);
+                Long keywordId = mainKeyword.getId();
+                Article valueArticle = getMainArticleByKeywordAndFrameTypeIn(keywordId, List.of(FrameType.STRONG_VALUE, FrameType.VALUE));
+                Article normArticle = getMainArticleByKeywordAndFrameTypeIn(keywordId, List.of(FrameType.NORM, FrameType.STRONG_NORM));
 
                 mainKeywords.add(ScopeSectionResponseDto.MainKeywordDto.builder()
                         .category(category.name())
-                        .id(mainKeyword.getId())
+                        .id(keywordId)
                         .name(mainKeyword.getName())
-                        .articleCount(getArticleCount(mainKeyword.getId()))
+                        .articleCount(getArticleCount(keywordId))
                         .valueArticleTitle(valueArticle != null ? valueArticle.getTitle() : null)
                         .valueImageUrl(valueArticle != null ? valueArticle.getImageUrl() : null)
                         .normArticleTitle(normArticle != null ? normArticle.getTitle() : null)
@@ -72,6 +74,15 @@ public class KeywordService {
         }
 
         return mainKeywords;
+    }
+
+    private Article getMainArticleByKeywordAndFrameTypeIn(Long keywordId, List<FrameType> frameTypes) {
+        return articleRepository.findTopByKeywordIdAndFrameTypeInOrderByViewCountDesc(
+                keywordId,
+                frameTypes,
+                PageRequest.of(0, 1))
+                .stream().findFirst()
+                .orElse(null);
     }
 
     /** Keyword 리스트 -> KeywordDto 리스트 */
