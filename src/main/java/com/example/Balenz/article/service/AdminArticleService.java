@@ -49,11 +49,7 @@ public class AdminArticleService {
                         NewsAgency.builder().name(articleSaveRequestDto.getNewsAgencyName()).build()
                 ));
 
-        // 2. 카테고리 추출
-        // TODO : 카테고리 추출 구현 필요
-        Category category = Category.SOCIETY;
-
-        // 3. 키워드 추출
+        // 2. 키워드 추출
         LocalDate preparedServiceDate = keywordService.getPreparedServiceDate();
 
         List<String> existingKeywords = keywordRepository
@@ -67,6 +63,8 @@ public class AdminArticleService {
                 KeywordExtractDto.class
         );
 
+        Category category = toCategory(keywordExtractDto.category());
+
         Keyword keyword = keywordRepository.findByNameAndCategoryAndServiceDate(keywordExtractDto.keyword(), category, preparedServiceDate)
                 .orElseGet(() -> keywordRepository.save(
                         Keyword.builder()
@@ -76,7 +74,7 @@ public class AdminArticleService {
                                 .serviceDate(preparedServiceDate).build()
                 ));
 
-        // 4. 기사 요약
+        // 3. 기사 요약
         SummaryDto summaryDto = claudeApiClient.getResponse(
                 SummaryPrompt.create(title, content),
                 1024L,
@@ -86,7 +84,7 @@ public class AdminArticleService {
 
         String summary = summaryDto.summary();
 
-        // 5. 프레임타입 UNKNOWN으로 article 저장
+        // 4. 프레임타입 UNKNOWN으로 article 저장
         Article article = articleRepository.save(Article.builder()
                 .title(title)
                 .articleUrl(articleSaveRequestDto.getArticleUrl())
@@ -97,7 +95,7 @@ public class AdminArticleService {
                 .newsAgency(newsAgency)
                 .keyword(keyword).build());
 
-        // 6. 이념 분류 가능 여부 판별
+        // 5. 이념 분류 가능 여부 판별
         IdeologyClassifiableDto ideologyClassifiableDto = claudeApiClient.getResponse(
                 IdeologyClassifiablePrompt.create(content),
                 300L,
@@ -107,7 +105,7 @@ public class AdminArticleService {
 
         boolean isClassifiable = ideologyClassifiableDto.isClassifiable();
 
-        // 6-1. 이념 분류 불가할 경우 수동 추출 요청 이메일 전송
+        // 5-1. 이념 분류 불가할 경우 수동 추출 요청 이메일 전송
         if (!isClassifiable) {
             try {
                 emailService.sendEmail(
@@ -131,7 +129,7 @@ public class AdminArticleService {
             return;
         }
 
-        // 6-2. 이념 분류 가능한 경우 이념 추출
+        // 5-2. 이념 분류 가능한 경우 이념 추출
         IdeologyClassifyDto ideologyClassifyDto = claudeApiClient.getResponse(
                 IdeologyClassifyPrompt.create(content),
                 1024L,
@@ -162,6 +160,22 @@ public class AdminArticleService {
             case "R" -> FrameType.NORM;
             case "SR" -> FrameType.STRONG_NORM;
             default -> throw new BaseException(ErrorCode.EXTERNAL_API_ERROR, "잘못된 ideology입니다. - " + ideology);
+        };
+    }
+
+    private Category toCategory(String category) {
+        if (category == null || category.isBlank()) {
+            throw new BaseException(ErrorCode.EXTERNAL_API_ERROR, "category 값이 비어있습니다.");
+        }
+
+        return switch (category) {
+            case "정치" -> Category.POLITICS;
+            case "경제" -> Category.ECONOMY;
+            case "사회" -> Category.SOCIETY;
+            case "세계" -> Category.WORLD;
+            case "문화" -> Category.CULTURE;
+            case "기술" -> Category.TECHNOLOGY;
+            default -> throw new BaseException(ErrorCode.EXTERNAL_API_ERROR, "잘못된 category입니다. - " + category);
         };
     }
 
