@@ -52,6 +52,10 @@ dependencies {
 
     // Claude
     implementation 'com.anthropic:anthropic-java:2.+'
+
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
 }
 
 tasks.named('test') {

@@ -1,8 +1,7 @@
 package com.example.Balenz.keyword.dto;
 
 import com.example.Balenz.keyword.entity.DominantFrameType;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
 
@@ -38,6 +37,9 @@ public class ScopeSectionResponseDto {
 
     @Data
     @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ArticleCountDto {
 
         private Long value;
