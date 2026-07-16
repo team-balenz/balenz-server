@@ -44,4 +44,12 @@ public class KeywordScrapService {
         return true;
     }
 
+    public boolean isScraped(Long keywordId, Long userId) {
+        if (userId == null) {
+            return false;
+        }
+
+        return userKeywordScrapRepository.existsByUser_IdAndKeyword_Id(userId, keywordId);
+    }
+
 }

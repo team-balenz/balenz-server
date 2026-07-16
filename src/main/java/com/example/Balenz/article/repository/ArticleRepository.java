@@ -38,7 +38,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     FROM Article a
     WHERE a.keyword.id = :keywordId
       AND a.frameType = :frameType
-        ORDER BY ( a.valueUserViewCount + a.neutralUserViewCount + a.normUserViewCount ) DESC,
+    ORDER BY ( a.valueUserViewCount + a.neutralUserViewCount + a.normUserViewCount ) DESC,
     a.id ASC
 """)
     List<Article> findByKeyword_IdAndFrameTypeOrderByViewCountDesc(
@@ -56,4 +56,14 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     WHERE REPLACE(a.title, ' ', '') LIKE CONCAT('%', REPLACE(:query, ' ', ''), '%')
 """)
     List<Article> searchByTitle(@Param("query") String query);
+
+    // 키워드 내 기사 조회수 순 전체 조회
+    @Query("""
+    SELECT a
+    FROM Article a
+    WHERE a.keyword.id = :keywordId
+    ORDER BY ( a.valueUserViewCount + a.neutralUserViewCount + a.normUserViewCount ) DESC,
+    a.id ASC
+""")
+    List<Article> findByKeywordIdOrderByTotalViewCountDesc(@Param("keywordId") Long keywordId);
 }

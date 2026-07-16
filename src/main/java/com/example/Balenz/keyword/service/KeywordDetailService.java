@@ -14,6 +14,7 @@ import com.example.Balenz.keyword.entity.DominantFrameType;
 import com.example.Balenz.keyword.entity.Keyword;
 import com.example.Balenz.keyword.repository.KeywordRepository;
 import com.example.Balenz.scrap.repository.UserKeywordScrapRepository;
+import com.example.Balenz.scrap.service.KeywordScrapService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ public class KeywordDetailService {
     private final KeywordService keywordService;
     private final ArticleDetailService articleDetailService;
     private final UserKeywordScrapRepository userKeywordScrapRepository;
+    private final KeywordScrapService keywordScrapService;
 
     @Transactional
     public KeywordDetailDto getKeywordDetail(Long keywordId, Long userId) {
@@ -58,11 +60,8 @@ public class KeywordDetailService {
         Set<Long> mainArticleIds = getMainArticleIds(mainArticles);
         RelatedArticlesDto relatedArticlesDto = articleDetailService.getRelatedArticlesDto(keywordId, mainArticleIds);
 
-        // 스크랩 여부 조회
-        boolean isScraped = false;
-        if (userId != null) {
-            isScraped = userKeywordScrapRepository.existsByUser_IdAndKeyword_Id(userId, keywordId);
-        }
+        // 스크랩 여부 확인
+        boolean isScraped = keywordScrapService.isScraped(keywordId, userId);
 
         return KeywordDetailDto.builder()
                 .id(keywordId)
