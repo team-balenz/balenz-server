@@ -43,6 +43,7 @@ public class DailyFocusService {
                 dailyFocusCacheDto.id(),
                 dailyFocusCacheDto.name(),
                 dailyFocusCacheDto.imageUrl(),
+                dailyFocusCacheDto.category(),
                 dailyFocusCacheDto.articleCount(),
                 dailyFocusCacheDto.articles(),
                 isScraped
