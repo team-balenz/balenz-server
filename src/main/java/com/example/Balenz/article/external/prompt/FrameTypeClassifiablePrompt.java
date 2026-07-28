@@ -1,6 +1,6 @@
 package com.example.Balenz.article.external.prompt;
 
-public class IdeologyClassifiablePrompt {
+public class FrameTypeClassifiablePrompt {
 
     public static String create(String articleContent) {
         return """
