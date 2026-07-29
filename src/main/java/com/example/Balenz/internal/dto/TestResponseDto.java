@@ -8,6 +8,8 @@ import lombok.Data;
 @Builder
 public class TestResponseDto {
 
+    private String content;
+
     private String keyword;
 
     private String summary;

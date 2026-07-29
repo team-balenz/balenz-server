@@ -63,6 +63,7 @@ public class TestService {
 
         if (!isClassifiable) {
             return TestResponseDto.builder()
+                    .content(testArticle.getContent())
                     .keyword(keywordExtractDto.keyword())
                     .summary(summary)
                     .isClassifiable(false)
@@ -77,6 +78,7 @@ public class TestService {
         );
 
         return TestResponseDto.builder()
+                .content(testArticle.getContent())
                 .keyword(keywordExtractDto.keyword())
                 .summary(summary)
                 .isClassifiable(true)

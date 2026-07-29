@@ -4,11 +4,15 @@ import com.example.Balenz.global.exception.BaseException;
 import com.example.Balenz.global.exception.ErrorCode;
 import com.example.Balenz.internal.dto.ExternalArticleRequestDto;
 import com.example.Balenz.internal.dto.ExternalArticleResponseDto;
+import com.example.Balenz.internal.dto.TestArticleResponseDto;
 import com.example.Balenz.internal.entity.TestArticle;
 import com.example.Balenz.internal.repository.TestArticleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -177,6 +181,23 @@ public class TestArticleService {
             log.error("외부 API 에러 - " + e.getMessage());
             throw new BaseException(ErrorCode.EXTERNAL_API_ERROR, "외부 API에서 알 수 없는 오류가 발생했습니다.");
         }
+    }
+
+    public List<TestArticleResponseDto> getTestArticleData(int page, int size) {
+        Pageable pageable = PageRequest.of(
+                page - 1,
+                size,
+                Sort.by(Sort.Direction.ASC, "id")
+        );
+
+        return testArticleRepository.findAll(pageable)
+                .getContent()
+                .stream()
+                .map(testArticle -> new TestArticleResponseDto(
+                        testArticle.getId(),
+                        testArticle.getTitle(),
+                        testArticle.getContent()
+                )).toList();
     }
 
 }
