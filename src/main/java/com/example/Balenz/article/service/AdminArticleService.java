@@ -5,8 +5,8 @@ import com.example.Balenz.article.entity.Article;
 import com.example.Balenz.article.entity.FrameType;
 import com.example.Balenz.article.entity.NewsAgency;
 import com.example.Balenz.article.external.ClaudeApiClient;
-import com.example.Balenz.article.external.prompt.IdeologyClassifiablePrompt;
-import com.example.Balenz.article.external.prompt.IdeologyClassifyPrompt;
+import com.example.Balenz.article.external.prompt.FrameTypeClassifiablePrompt;
+import com.example.Balenz.article.external.prompt.FrameTypeClassifyPrompt;
 import com.example.Balenz.article.external.prompt.KeywordPrompt;
 import com.example.Balenz.article.external.prompt.SummaryPrompt;
 import com.example.Balenz.article.repository.ArticleRepository;
@@ -96,14 +96,14 @@ public class AdminArticleService {
                 .keyword(keyword).build());
 
         // 5. 이념 분류 가능 여부 판별
-        IdeologyClassifiableDto ideologyClassifiableDto = claudeApiClient.getResponse(
-                IdeologyClassifiablePrompt.create(content),
+        FrameTypeClassifiableDto frameTypeClassifiableDto = claudeApiClient.getResponse(
+                FrameTypeClassifiablePrompt.create(content),
                 300L,
-                IdeologyClassifiableDto.class
+                FrameTypeClassifiableDto.class
         );
 
 
-        boolean isClassifiable = ideologyClassifiableDto.isClassifiable();
+        boolean isClassifiable = frameTypeClassifiableDto.isClassifiable();
 
         // 5-1. 이념 분류 불가할 경우 수동 추출 요청 이메일 전송
         if (!isClassifiable) {
@@ -130,13 +130,13 @@ public class AdminArticleService {
         }
 
         // 5-2. 이념 분류 가능한 경우 이념 추출
-        IdeologyClassifyDto ideologyClassifyDto = claudeApiClient.getResponse(
-                IdeologyClassifyPrompt.create(content),
+        FrameTypeClassifyDto frameTypeClassifyDto = claudeApiClient.getResponse(
+                FrameTypeClassifyPrompt.create(content),
                 1024L,
-                IdeologyClassifyDto.class
+                FrameTypeClassifyDto.class
         );
 
-        FrameType frameType = toFrameType(ideologyClassifyDto.ideology());
+        FrameType frameType = toFrameType(frameTypeClassifyDto.ideology());
         article.updateFrameType(frameType);
     }
 
@@ -148,7 +148,7 @@ public class AdminArticleService {
         article.updateFrameType(frameTypeUpdateRequestDto.getFrameType());
     }
 
-    private FrameType toFrameType(String ideology) {
+    public FrameType toFrameType(String ideology) {
         if (ideology == null || ideology.isBlank()) {
             throw new BaseException(ErrorCode.EXTERNAL_API_ERROR, "ideology 값이 비어있습니다.");
         }

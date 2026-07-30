@@ -1,6 +1,6 @@
 package com.example.Balenz.article.dto;
 
-public record IdeologyClassifiableDto(
+public record FrameTypeClassifiableDto(
         boolean isClassifiable
 ) {
 }

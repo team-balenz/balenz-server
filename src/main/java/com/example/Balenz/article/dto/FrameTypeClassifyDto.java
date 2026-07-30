@@ -1,6 +1,6 @@
 package com.example.Balenz.article.dto;
 
-public record IdeologyClassifyDto(
+public record FrameTypeClassifyDto(
         String ideology,
         Double confidence,
         String reason
