@@ -74,24 +74,22 @@ public class TestArticleService {
 
     /** TestArticle 저장 */
     private int saveTestArticles(List<ExternalArticleResponseDto.ExternalArticleDto> articles) {
-        List<String> forbiddenCategories = List.of("인물", "종합", "기타");
+        List<String> forbiddenCategories = List.of("인물", "종합", "기타", "오피니언");
         int count = 0;
 
         for (ExternalArticleResponseDto.ExternalArticleDto article : articles) {
             List<String> categories = article.getCategories();
 
-            boolean containsForbiddenCategory =
-                    categories != null
-                    && forbiddenCategories.stream().noneMatch(categories::contains);
-
-            if (containsForbiddenCategory) { // forbidden이 아닌 경우만 저장
+            if (categories != null
+                    && forbiddenCategories.stream().anyMatch(categories::contains)) { // forbidden에 속하는 카테고리를 포함하는 경우 저장 X
                 continue;
             }
 
             testArticleRepository.save(
                     new TestArticle(
                             article.getTitle(),
-                            article.getBody()
+                            article.getBody(),
+                            categories
                     ));
 
             count++;

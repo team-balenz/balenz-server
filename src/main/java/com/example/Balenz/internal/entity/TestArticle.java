@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -22,9 +24,12 @@ public class TestArticle extends BaseTimeEntity {
     @Column(columnDefinition = "LONGTEXT", nullable = false)
     private String content;
 
-    public TestArticle(String title, String content) {
+    private List<String> categories;
+
+    public TestArticle(String title, String content, List<String> categories) {
         this.title = title;
         this.content = content;
+        this.categories = categories;
     }
 
 }
